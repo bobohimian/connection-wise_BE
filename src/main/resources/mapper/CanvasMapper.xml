@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.conwise.mapper.CanvasMapper">
+
+    <resultMap id="CanvasResultMap" type="com.conwise.model.Canvas">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="nodes" column="nodes" typeHandler="com.conwise.handler.NodeListTypeHandler"/>
+        <result property="edges" column="edges" typeHandler="com.conwise.handler.EdgeListTypeHandler"/>
+        <result property="settings" column="settings" typeHandler="com.conwise.handler.JsonTypeHandler"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="CanvasResultMap">
+        SELECT * FROM canvases
+    </select>
+
+    <select id="findById" resultMap="CanvasResultMap">
+        SELECT * FROM canvases WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="CanvasResultMap">
+        SELECT * FROM canvases WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" parameterType="com.conwise.model.Canvas" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO canvases (
+            user_id, title, description, is_public, thumbnail_url,
+            nodes, edges, settings
+        ) VALUES (
+                     #{userId}, #{title}, #{description}, #{isPublic}, #{thumbnailUrl},
+                     #{nodes,typeHandler=com.conwise.handler.JsonTypeHandler},
+                     #{edges,typeHandler=com.conwise.handler.JsonTypeHandler},
+                     #{settings,typeHandler=com.conwise.handler.JsonTypeHandler}
+                 )
+    </insert>
+
+
+    <update id="update" parameterType="com.conwise.model.Canvas">
+        UPDATE canvases
+        SET
+            title         = #{title},
+            description   = #{description},
+            is_public     = #{isPublic},
+            thumbnail_url = #{thumbnailUrl},
+            nodes         = #{nodes,typeHandler=com.conwise.handler.JsonTypeHandler},
+            edges         = #{edges,typeHandler=com.conwise.handler.JsonTypeHandler},
+            settings      = #{settings,typeHandler=com.conwise.handler.JsonTypeHandler},
+            updated_at    = CURRENT_TIMESTAMP
+        WHERE
+            id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM canvases WHERE id = #{id}
+    </delete>
+
+    <insert id="insertCanvasNode">
+        UPDATE canvases
+        SET nodes=nodes||#{node}::jsonb
+        WHERE
+            id=#{canvasId}
+    </insert>
+
+    <delete id="deleteCanvasNode">
+        UPDATE canvases
+        SET nodes=(
+            SELECT jsonb_agg(elem)
+            FROM jsonb_array_elements(nodes) AS elem
+            WHERE elem->>'id' !=#{nodeId}
+            )
+        WHERE id=#{canvasId}
+    </delete>
+
+    <update id="updateCanvasNodeAttribute" parameterType="map">
+        UPDATE canvases
+        SET nodes = jsonb_set(
+                nodes,
+                #{path}::text[],
+                #{newValue}::jsonb,
+                TRUE
+                   )
+        WHERE id = #{canvasId};
+    </update>
+
+    <insert id="insertCanvasEdge">
+        UPDATE canvases
+        SET edges=edges||#{edge}::jsonb
+        WHERE
+            id=#{canvasId}
+    </insert>
+
+    <delete id="deleteCanvasEdge">
+        UPDATE canvases
+        SET edges=(
+            SELECT jsonb_agg(elem)
+            FROM jsonb_array_elements(edges) AS elem
+            WHERE elem->>'id' !=#{edgeId}
+        )
+        WHERE id=#{canvasId}
+    </delete>
+    <update id="updateCanvasEdgeAttribute"  parameterType="map">
+        UPDATE canvases
+        SET
+            edges = jsonb_set(
+                    edges,
+                    #{path}::text[],
+                    #{newValue}::jsonb,
+                    TRUE
+                    )
+        WHERE
+            id = #{canvasId};
+    </update>
+</mapper>
