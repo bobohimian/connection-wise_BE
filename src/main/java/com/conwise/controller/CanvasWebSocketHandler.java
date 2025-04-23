@@ -1,4 +1,4 @@
-package com.conwise.handler;
+package com.conwise.controller;
 
 import com.conwise.model.Canvas;
 import com.conwise.model.JsonUpdateOperation;
@@ -13,20 +13,26 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Component
-public class MyWebSocketHandler extends TextWebSocketHandler {
+public class CanvasWebSocketHandler extends TextWebSocketHandler {
     private final CanvasService canvasService;
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
-    public MyWebSocketHandler(CanvasService canvasService) {
+    public CanvasWebSocketHandler(CanvasService canvasService) {
         this.canvasService = canvasService;
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        Canvas canvas = canvasService.getCanvasById(1L);
+        Map<String, Object> attributes = session.getAttributes();
+
+        Canvas canvas = canvasService.getCanvasById(Long.valueOf((String) attributes.get("canvasId")));
         ResponseMessage message = new ResponseMessage("init", canvas);
         String response = mapper.writeValueAsString(message);
         session.sendMessage(new TextMessage(response));
@@ -82,4 +88,6 @@ public class MyWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         // 连接关闭后的处理逻辑
     }
+
+
 }

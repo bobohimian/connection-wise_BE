@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/canvases")
+@RequestMapping("/canvas")
 public class CanvasController {
     
     private final CanvasService canvasService;
@@ -19,12 +19,13 @@ public class CanvasController {
     public CanvasController(CanvasService canvasService) {
         this.canvasService = canvasService;
     }
-    
-    @GetMapping
-    public ResponseEntity<List<Canvas>> getAllCanvases() {
+
+
+    @GetMapping(("user/{useId}"))
+    public ResponseEntity<List<Canvas>> getAllCanvases(@PathVariable("useId") int id) {
         return ResponseEntity.ok(canvasService.getAllCanvases());
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<Canvas> getCanvasById(@PathVariable Long id) {
         Canvas canvas = canvasService.getCanvasById(id);

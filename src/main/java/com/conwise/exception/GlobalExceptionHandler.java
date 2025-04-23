@@ -1,6 +1,5 @@
 package com.conwise.exception;
 
-import com.conwise.model.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -21,11 +20,9 @@ public class GlobalExceptionHandler {
      * @return 错误响应
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Object>> handleIllegalArgumentException(
+    public ResponseEntity<Object> handleIllegalArgumentException(
             IllegalArgumentException ex, WebRequest request) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(HttpStatus.BAD_REQUEST.value(), ex.getMessage()));
+        return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
     /**
@@ -35,11 +32,8 @@ public class GlobalExceptionHandler {
      * @return 错误响应
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Object>> handleAllExceptions(
+    public ResponseEntity<Object> handleAllExceptions(
             Exception ex, WebRequest request) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR.value(), 
-                        "An unexpected error occurred: " + ex.getMessage()));
+        return ResponseEntity.badRequest().body("An unexpected error occurred: " + ex.getMessage());
     }
 }
