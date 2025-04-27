@@ -87,6 +87,7 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         // 连接关闭后的处理逻辑
+        System.out.println("closed");
     }
 
 

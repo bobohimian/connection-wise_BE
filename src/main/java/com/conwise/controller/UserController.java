@@ -38,6 +38,7 @@ public class UserController {
         User user = (User) session.getAttribute("user");
         if (user == null) {
             session.invalidate();
+            System.out.println("未登录");
             return ResponseEntity.status(401).body(null);
         }
         return ResponseEntity.ok(user);
