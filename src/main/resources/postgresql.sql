@@ -63,7 +63,6 @@ INSERT INTO canvases (
                  "type": "codeNode",
                  "position": { "x": 500, "y": 350 },
                  "data": {
-                   "background": "#48BB78",
                    "language": "javascript",
                    "code": "function greeting() {\n  return ''Hello, ReactFlow!'';\n}"
                  }

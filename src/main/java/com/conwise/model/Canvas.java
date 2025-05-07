@@ -6,8 +6,8 @@ import java.util.List;
 
 @Data
 public class Canvas {
-    private Long id;
-    private Long userId;
+    private int id;
+    private int userId;
     private String title;
     private String description;
     private boolean isPublic;

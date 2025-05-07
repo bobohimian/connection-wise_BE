@@ -1,26 +1,12 @@
 package com.conwise.controller;
 
-import com.conwise.model.Node;
 import com.conwise.service.AiService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.converter.BeanOutputConverter;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
-import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.server.ServerResponse;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @RestController
@@ -46,4 +32,12 @@ public class AiController {
         return aiService.associate(userInput);
     }
 
+    @GetMapping(value = "/generate-graph", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<String>> generateGraph(@RequestParam("prompt") String userInput) {
+        return aiService.generateGraph(userInput);
+    }
+    @GetMapping(value = "/generate-graph-str", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public String generateGraphStr(@RequestParam("prompt") String userInput) {
+        return aiService.generateGraphStr(userInput);
+    }
 }

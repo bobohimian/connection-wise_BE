@@ -16,25 +16,23 @@ import java.util.Map;
 
 public interface CanvasService {
 
-    public List<Canvas> getAllCanvases();
+    public Canvas getCanvasById(int id);
 
-    public Canvas getCanvasById(Long id);
+    public List<Canvas> getCanvasesByUserId(int userId);
 
-    public List<Canvas> getCanvasesByUserId(Long userId);
-
-    public boolean createCanvas(Canvas canvas);
+    public boolean createCanvas(int userId);
 
     public boolean updateCanvas(Canvas canvas) ;
 
-    public boolean deleteCanvas(Long id);
+    public boolean deleteCanvas(int id);
     
-    public boolean addNode(int canvasId,String node) ;
+    public boolean addNode(int canvasId,String nodeId,String node) ;
 
     public boolean deleteNode(int canvasId,String nodeId);
 
     public boolean updateNodeAttribute(int canvasId,String nodeId, List<String> pathList, String newValue);
 
-    public boolean addEdge(int canvasId,String edge);
+    public boolean addEdge(int canvasId,String edgeId,String edge);
 
     public boolean deleteEdge(int canvasId,String edgeId) ;
 

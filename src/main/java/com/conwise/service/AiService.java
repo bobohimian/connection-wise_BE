@@ -9,5 +9,9 @@ public interface AiService {
 
     Flux<ServerSentEvent<String>> generate(String userInput, String associateDirection);
 
-    Flux<ServerSentEvent<String>>  associate(String userInput);
+    Flux<ServerSentEvent<String>> associate(String userInput);
+
+    Flux<ServerSentEvent<String>> generateGraph(String userInput);
+
+    String generateGraphStr(String userInput);
 }

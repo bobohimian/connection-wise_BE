@@ -10,14 +10,15 @@ import java.util.List;
 
 @Mapper
 public interface CanvasMapper {
-    // 获取所有画布
-    List<Canvas> findAll();
-    
+
     // 根据ID获取画布
-    Canvas findById(@Param("id") Long id);
-    
+    Canvas findById(@Param("id") int id);
+
+    // 根据ID列表获取画布
+    List<Canvas> findByIdIn(@Param("ids") List<Integer> ids);
+
     // 根据用户ID获取画布
-    List<Canvas> findByUserId(@Param("userId") Long userId);
+    List<Canvas> findByUserId(@Param("userId") int userId);
     
     // 插入新画布
     int insert(Canvas canvas);
@@ -26,7 +27,7 @@ public interface CanvasMapper {
     int update(Canvas canvas);
     
     // 删除画布
-    int deleteById(@Param("id") Long id);
+    int deleteById(@Param("id") int id);
 
     // 修改节点属性
     int updateCanvasNodeAttribute(

@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RequestMessage {
     private String type;
-    private JsonUpdateOperation operation;
+    private Operation operation;
 }

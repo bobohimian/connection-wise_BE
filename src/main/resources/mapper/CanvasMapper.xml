@@ -2,6 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.conwise.mapper.CanvasMapper">
 
+    <resultMap id="CanvasListResultMap" type="com.conwise.model.Canvas">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="settings" column="settings" typeHandler="com.conwise.handler.JsonTypeHandler"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,user_id,title,description, thumbnail_url,created_at,updated_at,settings
+    </sql>
+
     <resultMap id="CanvasResultMap" type="com.conwise.model.Canvas">
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
@@ -15,95 +30,154 @@
         <result property="settings" column="settings" typeHandler="com.conwise.handler.JsonTypeHandler"/>
     </resultMap>
 
-    <select id="findAll" resultMap="CanvasResultMap">
-        SELECT * FROM canvases
-    </select>
+    <sql id="Base_Column_List_including_nodes_edges">
+        id,user_id,title,description, thumbnail_url,created_at,updated_at,nodes,edges,settings
+    </sql>
 
     <select id="findById" resultMap="CanvasResultMap">
-        SELECT * FROM canvases WHERE id = #{id}
+        SELECT
+            <include refid="Base_Column_List_including_nodes_edges">
+            </include>
+        FROM
+            canvases
+        WHERE
+            id = #{id}
     </select>
 
-    <select id="findByUserId" resultMap="CanvasResultMap">
-        SELECT * FROM canvases WHERE user_id = #{userId}
+    <select id="findByUserId" resultMap="CanvasListResultMap">
+        SELECT
+            <include refid="Base_Column_List">
+            </include>
+        FROM
+            canvases
+        WHERE
+            user_id = #{userId}
+    </select>
+
+    <select id="findByIdIn" resultType="com.conwise.model.Canvas">
+        SELECT
+        <include refid="Base_Column_List">
+        </include>
+        FROM
+        canvases
+        WHERE
+        id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 
     <insert id="insert" parameterType="com.conwise.model.Canvas" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO canvases (
-            user_id, title, description, is_public, thumbnail_url,
-            nodes, edges, settings
+        user_id
+        <if test="title != null and title != ''">, title</if>
+        <if test="description != null">, description</if>
+        <if test="thumbnailUrl != null">, thumbnail_url</if>
+        <if test="nodes != null">, nodes</if>
+        <if test="edges != null">, edges</if>
+        <if test="settings != null">, settings</if>
         ) VALUES (
-                     #{userId}, #{title}, #{description}, #{isPublic}, #{thumbnailUrl},
-                     #{nodes,typeHandler=com.conwise.handler.JsonTypeHandler},
-                     #{edges,typeHandler=com.conwise.handler.JsonTypeHandler},
-                     #{settings,typeHandler=com.conwise.handler.JsonTypeHandler}
-                 )
+        #{userId}
+        <if test="title != null and title != ''">, #{title}</if>
+        <if test="description != null">, #{description}</if>
+        <if test="thumbnailUrl != null">, #{thumbnailUrl}</if>
+        <if test="nodes != null">, #{nodes,typeHandler=com.conwise.handler.JsonTypeHandler}</if>
+        <if test="edges != null">, #{edges,typeHandler=com.conwise.handler.JsonTypeHandler}</if>
+        <if test="settings != null">, #{settings,typeHandler=com.conwise.handler.JsonTypeHandler}</if>
+        )
     </insert>
 
 
     <update id="update" parameterType="com.conwise.model.Canvas">
         UPDATE canvases
         SET
-            title         = #{title},
-            description   = #{description},
-            is_public     = #{isPublic},
+        <if test="title != null">
+            title = #{title},
+        </if>
+        <if test="description != null">
+            description = #{description},
+        </if>
+        <if test="thumbnailUrl != null">
             thumbnail_url = #{thumbnailUrl},
-            nodes         = #{nodes,typeHandler=com.conwise.handler.JsonTypeHandler},
-            edges         = #{edges,typeHandler=com.conwise.handler.JsonTypeHandler},
-            settings      = #{settings,typeHandler=com.conwise.handler.JsonTypeHandler},
-            updated_at    = CURRENT_TIMESTAMP
+        </if>
+        <if test="settings != null">
+            settings = #{settings,typeHandler=com.conwise.handler.JsonTypeHandler},
+        </if>
+        updated_at = CURRENT_TIMESTAMP
         WHERE
-            id = #{id}
+        id = #{id}
     </update>
 
     <delete id="deleteById">
-        DELETE FROM canvases WHERE id = #{id}
+        DELETE
+        FROM
+            canvases
+        WHERE
+            id = #{id}
     </delete>
 
     <insert id="insertCanvasNode">
         UPDATE canvases
-        SET nodes=nodes||#{node}::jsonb
+        SET
+            nodes=nodes || #{node}::jsonb
         WHERE
-            id=#{canvasId}
+            id=
+            #{canvasId}
     </insert>
 
     <delete id="deleteCanvasNode">
         UPDATE canvases
-        SET nodes=(
-            SELECT jsonb_agg(elem)
-            FROM jsonb_array_elements(nodes) AS elem
-            WHERE elem->>'id' !=#{nodeId}
-            )
-        WHERE id=#{canvasId}
+        SET
+            nodes=COALESCE(
+                    (SELECT
+                         jsonb_agg(elem)
+                     FROM
+                         jsonb_array_elements(nodes) AS elem
+                     WHERE
+                         elem ->> 'id' != #{nodeId}),
+                    '[]' :: jsonb)
+        WHERE
+            id = #{canvasId}
     </delete>
 
     <update id="updateCanvasNodeAttribute" parameterType="map">
         UPDATE canvases
-        SET nodes = jsonb_set(
-                nodes,
-                #{path}::text[],
-                #{newValue}::jsonb,
-                TRUE
-                   )
-        WHERE id = #{canvasId};
+        SET
+            nodes = jsonb_set(
+                    nodes,
+                    #{path}::text[],
+                    #{newValue}::jsonb,
+                    TRUE
+                    )
+        WHERE
+            id = #{canvasId};
     </update>
 
     <insert id="insertCanvasEdge">
         UPDATE canvases
-        SET edges=edges||#{edge}::jsonb
+        SET
+            edges=edges || #{edge}::jsonb
         WHERE
-            id=#{canvasId}
+            id=
+            #{canvasId}
     </insert>
 
     <delete id="deleteCanvasEdge">
         UPDATE canvases
-        SET edges=(
-            SELECT jsonb_agg(elem)
-            FROM jsonb_array_elements(edges) AS elem
-            WHERE elem->>'id' !=#{edgeId}
-        )
-        WHERE id=#{canvasId}
+        SET
+            edges=COALESCE(
+                    (SELECT
+                         jsonb_agg(elem)
+                     FROM
+                         jsonb_array_elements(edges) AS elem
+                     WHERE
+                         elem ->> 'id' != #{edgeId}),
+                    '[]' :: jsonb
+                  )
+        WHERE
+            id = #{canvasId}
     </delete>
-    <update id="updateCanvasEdgeAttribute"  parameterType="map">
+    <update id="updateCanvasEdgeAttribute" parameterType="map">
         UPDATE canvases
         SET
             edges = jsonb_set(

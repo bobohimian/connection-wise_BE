@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.conwise.mapper.CanvasShareMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.conwise.model.CanvasShare">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="canvas_id" property="canvasId" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="permission" property="permission" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 基础列 -->
+    <sql id="Base_Column_List">
+        id, canvas_id, user_id, permission
+    </sql>
+
+    <!-- 插入 -->
+    <insert id="insert" parameterType="com.conwise.model.CanvasShare" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO canvas_shares (canvas_id, user_id, permission)
+        VALUES (#{canvasId,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{permission,jdbcType=VARCHAR})
+    </insert>
+
+    <!-- 根据ID删除 -->
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        DELETE FROM canvas_shares
+        WHERE id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 根据画布ID和用户ID删除 -->
+    <delete id="deleteByCanvasIdAndUserId">
+        DELETE FROM canvas_shares
+        WHERE canvas_id = #{canvasId,jdbcType=INTEGER} AND user_id = #{userId,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 根据画布ID删除所有 -->
+    <delete id="deleteByCanvasId" parameterType="java.lang.Integer">
+        DELETE FROM canvas_shares
+        WHERE canvas_id = #{canvasId,jdbcType=INTEGER}
+    </delete>
+
+    <!-- 更新 -->
+    <update id="update" parameterType="com.conwise.model.CanvasShare">
+        UPDATE canvas_shares
+        SET permission = #{permission,jdbcType=VARCHAR}
+        WHERE id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <!-- 根据ID查询 -->
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM canvas_shares
+        WHERE id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <!-- 根据画布ID和用户ID查询 -->
+    <select id="selectByCanvasIdAndUserId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM canvas_shares
+        WHERE canvas_id = #{canvasId,jdbcType=INTEGER} AND user_id = #{userId,jdbcType=INTEGER}
+    </select>
+
+    <!-- 根据画布ID查询所有 -->
+    <select id="selectByCanvasId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM canvas_shares
+        WHERE canvas_id = #{canvasId,jdbcType=INTEGER}
+    </select>
+
+    <!-- 根据用户ID查询所有 -->
+    <select id="selectByUserId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM canvas_shares
+        WHERE user_id = #{userId,jdbcType=INTEGER}
+    </select>
+
+    <!-- 查询所有 -->
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM canvas_shares
+    </select>
+
+</mapper>

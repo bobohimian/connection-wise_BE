@@ -61,7 +61,7 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             // ...
 
             // 验证通过,信息存储到WebSocketSession中
-            String canvasIdFromUri = extractCanvasIdFromUri(servletRequest.getURI().toString());
+            int canvasIdFromUri = Integer.parseInt(extractCanvasIdFromUri(servletRequest.getURI().toString()));
             attributes.put("canvasId", canvasIdFromUri);
             attributes.put("sessionId", sessionId);
 

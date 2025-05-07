@@ -1,32 +1,37 @@
 package com.conwise.controller;
 
 import com.conwise.model.LoginUser;
+import com.conwise.model.RegisterUser;
 import com.conwise.model.User;
+import com.conwise.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
     @PostMapping("/login")
     public ResponseEntity<User> login(@RequestBody LoginUser loginUser, HttpSession session) {
-        String username = loginUser.getUsername();
-        String password = loginUser.getPassword();
-        User user = new User();
-        user.setId(1);
-        user.setUsername(username);
-        user.setEmail("1719692158@qq.com");
-        user.setAvatar("dj918eu310e3190e");
-        if ("chenhong".equals(username) && "111".equals(password)) {
+        User user = userService.login(loginUser);
+        if (user != null) {
             session.setAttribute("user", user);
             return ResponseEntity.ok(user);
         }
         session.invalidate();
         return ResponseEntity.status(401).build();
     }
+
     @PostMapping("/logout")
     public ResponseEntity<User> logout(HttpSession session) {
         session.invalidate();
@@ -43,16 +48,24 @@ public class UserController {
         }
         return ResponseEntity.ok(user);
     }
-//    @PostMapping("/check-auth")
-//    public ResponseEntity<User> checkAuth(HttpServletRequest request) {
-//        HttpSession session = request.getSession(false);
-//        if (session == null) {
-//            return ResponseEntity.status(401).body(null);
-//        }
-//        User user = (User) session.getAttribute("user");
-//        if(user == null) {
-//            return ResponseEntity.status(401).body(null);
-//        }
-//        return ResponseEntity.ok(user);
-//    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody RegisterUser user) {
+        String username = user.getUsername();
+        System.out.println("username = " + username);
+        String password = user.getPassword();
+        System.out.println("password = " + password);
+        String email = user.getEmail();
+        System.out.println("email = " + email);
+        boolean registerSuccess = userService.register(user);
+        if (!registerSuccess)
+            return ResponseEntity.status(409).body(null);
+        return ResponseEntity.ok("success");
+
+    }
+    @GetMapping("/search")
+    public ResponseEntity<User> searchByUserName(@RequestParam("username") String username) {
+        User userList=userService.searchByUserName(username);
+        return ResponseEntity.ok(userList);
+    }
 }

@@ -5,9 +5,8 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class JsonUpdateOperation {
-    private int canvasId;
-    private String jsonObjId;
+public class Operation {
+    private String id;
     private List<String> path;
     private String value;
 }
