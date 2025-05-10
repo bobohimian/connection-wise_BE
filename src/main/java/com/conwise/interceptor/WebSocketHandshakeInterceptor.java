@@ -16,6 +16,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 @Component
 public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
 //    @Autowired
@@ -51,7 +53,6 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
 
             // 获取 HttpSession
             HttpSession session = servletRequest.getServletRequest().getSession();
-            String id = session.getId();
             if(session == null||!session.getId().equals(sessionId)){
                 response.setStatusCode(HttpStatus.FORBIDDEN);
                 return false;
@@ -60,8 +61,9 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             // todo 验证会话是否过期
             // ...
 
+
             // 验证通过,信息存储到WebSocketSession中
-            int canvasIdFromUri = Integer.parseInt(extractCanvasIdFromUri(servletRequest.getURI().toString()));
+            int canvasIdFromUri = Integer.parseInt(Objects.requireNonNull(extractCanvasIdFromUri(servletRequest.getURI().toString())));
             attributes.put("canvasId", canvasIdFromUri);
             attributes.put("sessionId", sessionId);
 

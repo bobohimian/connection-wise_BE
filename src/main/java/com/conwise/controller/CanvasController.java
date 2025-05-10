@@ -2,6 +2,7 @@ package com.conwise.controller;
 
 import com.conwise.model.Canvas;
 import com.conwise.model.CanvasShare;
+import com.conwise.model.User;
 import com.conwise.service.CanvasService;
 import com.conwise.service.CanvasShareService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +17,10 @@ import java.util.List;
 public class CanvasController {
 
     private final CanvasService canvasService;
-    private final CanvasShareService canvasShareService;
 
     @Autowired
-    public CanvasController(CanvasService canvasService, CanvasShareService canvasShareService) {
+    public CanvasController(CanvasService canvasService) {
         this.canvasService = canvasService;
-        this.canvasShareService = canvasShareService;
     }
 
 
@@ -64,33 +63,5 @@ public class CanvasController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
-    }
-
-    @GetMapping("/share/{userId}")
-    public ResponseEntity<List<Canvas>> getCanvasShare(@PathVariable int userId) {
-        List<Canvas> canvasList = canvasShareService.getSharedCanvas(userId);
-        return ResponseEntity.ok(canvasList);
-    }
-
-    @PostMapping("/share")
-    public ResponseEntity<Void> shareCanvas(@RequestBody CanvasShare canvasShare) {
-        boolean success = canvasShareService.shareCanvas(canvasShare);
-        if (!success)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        return ResponseEntity.ok().build();
-    }
-    @DeleteMapping("/share")
-    public ResponseEntity<Void> deleteShare(@RequestBody CanvasShare canvasShare) {
-        boolean success = canvasShareService.deleteShare(canvasShare);
-        if(!success)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        return ResponseEntity.ok().build();
-    }
-    @PutMapping("/share")
-    public ResponseEntity<Void> updateShare(@RequestBody CanvasShare canvasShare) {
-        boolean success = canvasShareService.updateShare(canvasShare);
-        if (!success)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        return ResponseEntity.ok().build();
     }
 }

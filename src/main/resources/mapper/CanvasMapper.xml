@@ -5,6 +5,7 @@
     <resultMap id="CanvasListResultMap" type="com.conwise.model.Canvas">
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
         <result property="title" column="title"/>
         <result property="description" column="description"/>
         <result property="thumbnailUrl" column="thumbnail_url"/>
@@ -14,7 +15,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,user_id,title,description, thumbnail_url,created_at,updated_at,settings
+        id,user_id,user_name,title,description, thumbnail_url,created_at,updated_at,settings
     </sql>
 
     <resultMap id="CanvasResultMap" type="com.conwise.model.Canvas">
@@ -69,7 +70,8 @@
 
     <insert id="insert" parameterType="com.conwise.model.Canvas" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO canvases (
-        user_id
+        user_id,
+        user_name
         <if test="title != null and title != ''">, title</if>
         <if test="description != null">, description</if>
         <if test="thumbnailUrl != null">, thumbnail_url</if>
@@ -77,7 +79,8 @@
         <if test="edges != null">, edges</if>
         <if test="settings != null">, settings</if>
         ) VALUES (
-        #{userId}
+        #{userId},
+        #{userName}
         <if test="title != null and title != ''">, #{title}</if>
         <if test="description != null">, #{description}</if>
         <if test="thumbnailUrl != null">, #{thumbnailUrl}</if>

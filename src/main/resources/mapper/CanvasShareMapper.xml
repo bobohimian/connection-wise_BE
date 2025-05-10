@@ -10,6 +10,7 @@
         <result column="permission" property="permission" jdbcType="VARCHAR"/>
     </resultMap>
 
+
     <!-- 基础列 -->
     <sql id="Base_Column_List">
         id, canvas_id, user_id, permission
@@ -17,8 +18,12 @@
 
     <!-- 插入 -->
     <insert id="insert" parameterType="com.conwise.model.CanvasShare" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO canvas_shares (canvas_id, user_id, permission)
-        VALUES (#{canvasId,jdbcType=INTEGER}, #{userId,jdbcType=INTEGER}, #{permission,jdbcType=VARCHAR})
+        INSERT INTO
+            canvas_shares (canvas_id, user_id, permission)
+        VALUES
+            (#{canvasId,jdbcType=INTEGER},
+             #{userId,jdbcType=INTEGER},
+             #{permission,jdbcType=VARCHAR})
     </insert>
 
     <!-- 根据ID删除 -->
@@ -43,7 +48,8 @@
     <update id="update" parameterType="com.conwise.model.CanvasShare">
         UPDATE canvas_shares
         SET permission = #{permission,jdbcType=VARCHAR}
-        WHERE id = #{id,jdbcType=INTEGER}
+        WHERE user_id = #{userId,jdbcType=INTEGER}
+        AND canvas_id = #{canvasId,jdbcType=INTEGER}
     </update>
 
     <!-- 根据ID查询 -->
@@ -84,5 +90,6 @@
         <include refid="Base_Column_List"/>
         FROM canvas_shares
     </select>
+
 
 </mapper>

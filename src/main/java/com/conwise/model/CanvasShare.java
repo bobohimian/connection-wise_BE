@@ -7,5 +7,6 @@ public class CanvasShare {
     private int id;
     private int canvasId;
     private int userId;
+    private String userName;
     private String permission;
 }

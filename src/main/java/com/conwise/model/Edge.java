@@ -10,6 +10,7 @@ public class Edge {
     private String sourceHandle;
     private String targetHandle;
     private String type;
+    private Object markerEnd;
     private Object data;
     private boolean animated;
     private Object style;

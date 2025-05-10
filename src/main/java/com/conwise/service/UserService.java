@@ -12,4 +12,5 @@ public interface UserService {
     boolean register(RegisterUser user);
 
     User searchByUserName(String username);
+
 }

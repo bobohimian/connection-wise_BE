@@ -9,10 +9,11 @@ import java.io.Serializable;
 public class User implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private Integer id;
+    private int shareId;
+    private int id;
     private String username;
     private String password;
     private String email;
     private String avatar;
+    private String permission;
 }
-

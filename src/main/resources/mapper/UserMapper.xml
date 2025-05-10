@@ -8,6 +8,13 @@
         <result column="email" property="email" jdbcType="VARCHAR" />
         <result column="password" property="password" jdbcType="VARCHAR" />
     </resultMap>
+    <resultMap id="UserShareResultMap" type="com.conwise.model.User">
+        <id column="share_id" jdbcType="INTEGER" property="shareId" />
+        <result column="id" jdbcType="INTEGER" property="id" />
+        <result column="username" jdbcType="VARCHAR" property="username" />
+        <result column="email" jdbcType="VARCHAR" property="email" />
+        <result column="permission" jdbcType="VARCHAR" property="permission" />
+    </resultMap>
 
     <!-- 通用查询列 -->
     <sql id="Base_Column_List">
@@ -37,6 +44,14 @@
         FROM users
         WHERE email = #{email}
     </select>
+    <select id="findByIds" resultType="com.conwise.model.User">
+        SELECT id,username,email
+        FROM users
+        WHERE id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 
     <!-- 插入用户 -->
     <insert id="insert" parameterType="com.conwise.model.User" useGeneratedKeys="true" keyProperty="id">
@@ -59,4 +74,18 @@
         DELETE FROM users
         WHERE id = #{id}
     </delete>
+    <select id="findShareUsersByCanvasId" parameterType="java.lang.Integer" resultMap="UserShareResultMap">
+        SELECT
+            cs.id AS share_id,
+            u.id,
+            u.username,
+            u.email,
+            cs.permission
+        FROM
+            canvas_shares cs
+                JOIN
+                users u ON cs.user_id = u.id
+        WHERE
+            cs.canvas_id = #{canvasId,jdbcType=INTEGER}
+    </select>
 </mapper>
