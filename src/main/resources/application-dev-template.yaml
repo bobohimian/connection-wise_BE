@@ -1,0 +1,47 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        max-age: 3600
+        path: /
+        name: SESSIONID
+      timeout: 3600
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.conwise.model
+  configuration:
+    map-underscore-to-camel-case: true
+spring:
+  application:
+    name: connectWise
+  session:
+    redis:
+      flush-mode: on_save
+      namespace: spring:session
+  datasource:
+    url: jdbc:postgresql://localhost:5432/conwise_db
+    username: #
+    password: #
+    driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+  ai:
+    openai:
+      api-key: #
+      base-url: #
+      chat:
+        options:
+          model: #
+minio:
+  endpoint: http://localhost:9000/
+  credentials:
+    username: #
+    password: #
+  bukcetName: #
+resoucre:
+  images: static/images/default-thumbnail.png

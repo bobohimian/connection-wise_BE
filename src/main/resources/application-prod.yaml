@@ -1,0 +1,48 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        max-age: 3600
+        path: /
+        name: SESSIONID
+      timeout: 3600
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.conwise.model
+  configuration:
+    map-underscore-to-camel-case: true
+spring:
+  application:
+    name: connectWise
+  session:
+    redis:
+      flush-mode: on_save
+      namespace: spring:session
+  datasource:
+    url: jdbc:postgresql://postgresql.zeabur.internal:5432/conwise_db
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      host: redis.zeabur.internal
+      port: 6379
+      #      password: K97BDIufV2H0gYxjv18p6S35nGoAy4Ld
+      database: 0
+  ai:
+    openai:
+      api-key: ${DEEPSEEK_API_KEY}
+      base-url: https://api.deepseek.com
+      chat:
+        options:
+          model: deepseek-chat
+minio:
+  endpoint: minio.zeabur.internal
+  credentials:
+    username: ${MINIO_USERNAME}
+    password: ${MINIO_PASSWORD}
+  bukcetName: bucket1
+resoucre:
+  images: static/images/default-thumbnail.png
