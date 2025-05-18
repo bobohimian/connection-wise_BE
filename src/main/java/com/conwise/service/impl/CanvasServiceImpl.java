@@ -8,24 +8,31 @@ import com.conwise.model.Edge;
 import com.conwise.model.Node;
 import com.conwise.model.User;
 import com.conwise.service.CanvasService;
+import com.conwise.service.MinioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 @Service
 public class CanvasServiceImpl implements CanvasService {
 
+    private final MinioService minioService;
     private final CanvasMapper canvasMapper;
     private final UserMapper userMapper;
     private final Map<Integer, LinkedHashMap<String, Integer>> nodeIndexMap = new HashMap<>();
     private final Map<Integer, LinkedHashMap<String, Integer>> edgeindexMap = new HashMap<>();
 
+    @Value("${resoucre.images}")
+    private String DEFAULT_THUMBNAIL_PATH;
+
     @Autowired
-    public CanvasServiceImpl(CanvasMapper canvasMapper, UserMapper userMapper) {
+    public CanvasServiceImpl(MinioService minioService, CanvasMapper canvasMapper, UserMapper userMapper) {
+        this.minioService = minioService;
         this.canvasMapper = canvasMapper;
         this.userMapper = userMapper;
     }
@@ -55,7 +62,17 @@ public class CanvasServiceImpl implements CanvasService {
         Canvas canvas = new Canvas();
         canvas.setUserId(userId);
         canvas.setUserName(user.getUsername());
-        return canvasMapper.insert(canvas) > 0;
+        int insert = canvasMapper.insert(canvas);
+        if (insert != 1) {
+            return false;
+        }
+        String thumbnailFileName = "thumbnail_canvas_" + canvas.getId() + ".png";
+        try {
+            minioService.uploadFile(DEFAULT_THUMBNAIL_PATH,thumbnailFileName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return true;
     }
 
     public boolean updateCanvas(Canvas canvas) {
@@ -130,5 +147,16 @@ public class CanvasServiceImpl implements CanvasService {
         String path = PostgresPathHelper.formatPath(pathList);
         int rowsUpdated = canvasMapper.updateCanvasEdgeAttribute(canvasId, path, newValue);
         return rowsUpdated > 0;
+    }
+
+    @Override
+    public boolean saveThumbnail(int canvasId, MultipartFile thumbnail) throws IOException {
+        String thumbnailFileName;
+        try {
+            thumbnailFileName = minioService.uploadFile(thumbnail, "thumbnail_canvas_" + canvasId+".png");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return thumbnailFileName != null;
     }
 }

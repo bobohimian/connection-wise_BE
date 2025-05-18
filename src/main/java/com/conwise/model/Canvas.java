@@ -12,7 +12,7 @@ public class Canvas {
     private String title;
     private String description;
     private boolean isPublic;
-    private String thumbnailUrl;
+    private String thumbnailFileName;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private List<Node> nodes;

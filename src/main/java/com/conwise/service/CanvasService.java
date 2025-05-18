@@ -7,7 +7,9 @@ import com.conwise.model.Edge;
 import com.conwise.model.Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,4 +39,6 @@ public interface CanvasService {
     public boolean deleteEdge(int canvasId,String edgeId) ;
 
     public boolean updateEdgeAttribute(int canvasId,String edgeId, List<String> pathList, String newValue) ;
+
+    boolean saveThumbnail(int canvasId, MultipartFile thumbnail) throws IOException;
 }

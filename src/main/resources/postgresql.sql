@@ -1,93 +1,48 @@
---  创建一个数据库和角色
-CREATE ROLE conwise_dba WITH LOGIN PASSWORD '123456';
-CREATE DATABASE conwise_db WITH OWNER conwise_dba;
-GRANT ALL PRIVILEGES ON DATABASE conwise_db TO conwise_dba;
-
-
-
-CREATE TABLE users (
-                       id SERIAL PRIMARY KEY,
-                       username VARCHAR(255) NOT NULL UNIQUE,
-                       email VARCHAR(255) NOT NULL UNIQUE,
-                       password VARCHAR(255) NOT NULL,
-                       created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                       updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+create database conwise_db;
+create table public.users
+(
+    id       serial
+        primary key,
+    username varchar(255) not null
+        unique,
+    email    varchar(255) not null
+        unique,
+    password varchar(255) not null
 );
-CREATE TABLE canvases (
-                          id SERIAL PRIMARY KEY,
-                          userid INTEGER NOT NULL,
-                          title VARCHAR(255) NOT NULL,
-                          description TEXT,
-                          thumbnail_url VARCHAR(255),
-                          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                          nodes JSONB DEFAULT '[]',
-                          edges JSONB DEFAULT '[]',
-                          settings JSONB DEFAULT '{}'
+
+alter table public.users
+    owner to conwise_dba;
+
+create table public.canvases
+(
+    id            serial
+        primary key,
+    user_id       integer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              not null,
+    title         varchar(255)             default 'new Canvas'::character varying                                                                                                                                                                                                                                                                                                                                                                                                                                                     not null,
+    description   text,
+    thumbnail_url varchar(255),
+    created_at    timestamp with time zone default CURRENT_TIMESTAMP                                                                                                                                                                                                                                                                                                                                                                                                                                                                   not null,
+    updated_at    timestamp with time zone default CURRENT_TIMESTAMP                                                                                                                                                                                                                                                                                                                                                                                                                                                                   not null,
+    nodes         jsonb                    default '[{"id": "node-1", "data": {"text": "这是一个示例节点，你可以在其中编辑文本，拖拽节点和连接不同的节点。", "theme": "bg-linear-to-r from-green-300 via-emerald-300 to-teal-300"}, "type": "textNode", "position": {"x": -10.5, "y": -150.5}}, {"id": "node-2", "data": {"text": "这是一个示例节点，你可以在其中编辑文本，拖拽节点和连接不同的节点。", "theme": "bg-linear-to-r from-purple-300 via-indigo-300 to-blue-300"}, "type": "textNode", "position": {"x": 300, "y": 60}}]'::jsonb not null,
+    edges         jsonb                    default '[{"id": "edge-1", "data": {"label": "[关系]"}, "type": "curvedEdge", "source": "node-1", "target": "node-2", "animated": true, "sourceHandle": null, "targetHandle": null}]'::jsonb                                                                                                                                                                                                                                                                                                not null,
+    settings      jsonb                    default '{}'::jsonb,
+    user_name     varchar(50)              default ''::character varying                                                                                                                                                                                                                                                                                                                                                                                                                                                               not null
 );
--- 假设已有一个用户，ID为1
--- 首先创建一个新的画布
-INSERT INTO canvases (
-    userid,
-    title,
-    description,
-    nodes,
-    edges
-) VALUES (
-             1, -- 用户ID
-             'Sample Flow Chart', -- 画布标题
-             'A demonstration of different node types and connections', -- 画布描述
-             -- 节点数据
-             '[
-               {
-                 "id": "node-1",
-                 "type": "textNode",
-                 "position": { "x": 250, "y": 50 },
-                 "data": { "text": "This is a sample note created with ReactFlow. You can drag nodes around and connect them." }
-               },
-               {
-                 "id": "node-2",
-                 "type": "todoNode",
-                 "position": { "x": 200, "y": 300 },
-                 "data": {
-                   "items": [
-                     { "id": "1", "text": "Create custom nodes", "completed": true },
-                     { "id": "2", "text": "Implement drag and drop", "completed": true },
-                     { "id": "3", "text": "Add connection lines", "completed": false },
-                     { "id": "4", "text": "Style with Tailwind CSS", "completed": false }
-                   ]
-                 }
-               },
-               {
-                 "id": "node-3",
-                 "type": "codeNode",
-                 "position": { "x": 500, "y": 350 },
-                 "data": {
-                   "language": "javascript",
-                   "code": "function greeting() {\n  return ''Hello, ReactFlow!'';\n}"
-                 }
-               }
-             ]'::jsonb,
-             -- 边数据
-             '[
-               {
-                 "id": "edge-1-2",
-                 "source": "node-1",
-                 "target": "node-2",
-                 "type": "curvedEdge",
-                 "animated": true
-               },
-               {
-                 "id": "edge-1-3",
-                 "source": "node-1",
-                 "target": "node-3",
-                 "type": "polylineEdge"
-               },
-               {
-                 "id": "edge-2-3",
-                 "source": "node-2",
-                 "target": "node-3",
-                 "type": "straightEdge"
-               }
-             ]'::jsonb
-         );
+
+alter table public.canvases
+    owner to postgres;
+
+create table public.canvas_shares
+(
+    id         serial
+        primary key,
+    canvas_id  integer                                       not null,
+    user_id    integer                                       not null,
+    permission varchar(50) default 'view'::character varying not null,
+    constraint canvas_shares_unique_canvas_user
+        unique (canvas_id, user_id)
+);
+
+alter table public.canvas_shares
+    owner to postgres;
+

@@ -6,10 +6,13 @@ import com.conwise.model.User;
 import com.conwise.service.CanvasService;
 import com.conwise.service.CanvasShareService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -63,5 +66,19 @@ public class CanvasController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/uploadThumbnail")
+    public ResponseEntity<Void> uploadThumbnail(@RequestParam("canvasId") int canvasId, @RequestParam("thumbnail") MultipartFile thumbnail) {
+        boolean success = false;
+        try {
+            success = canvasService.saveThumbnail(canvasId, thumbnail);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if(!success) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.ok().build();
     }
 }

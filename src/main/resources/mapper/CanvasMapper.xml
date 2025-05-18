@@ -8,14 +8,14 @@
         <result property="userName" column="user_name"/>
         <result property="title" column="title"/>
         <result property="description" column="description"/>
-        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="thumbnailFileName" column="thumbnail_file_name"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <result property="settings" column="settings" typeHandler="com.conwise.handler.JsonTypeHandler"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,user_id,user_name,title,description, thumbnail_url,created_at,updated_at,settings
+        id,user_id,user_name,title,description, thumbnail_file_name,created_at,updated_at,settings
     </sql>
 
     <resultMap id="CanvasResultMap" type="com.conwise.model.Canvas">
@@ -23,7 +23,7 @@
         <result property="userId" column="user_id"/>
         <result property="title" column="title"/>
         <result property="description" column="description"/>
-        <result property="thumbnailUrl" column="thumbnail_url"/>
+        <result property="thumbnailFileName" column="thumbnail_file_name"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <result property="nodes" column="nodes" typeHandler="com.conwise.handler.NodeListTypeHandler"/>
@@ -32,7 +32,7 @@
     </resultMap>
 
     <sql id="Base_Column_List_including_nodes_edges">
-        id,user_id,title,description, thumbnail_url,created_at,updated_at,nodes,edges,settings
+        id,user_id,title,description, thumbnail_file_name,created_at,updated_at,nodes,edges,settings
     </sql>
 
     <select id="findById" resultMap="CanvasResultMap">
@@ -74,7 +74,7 @@
         user_name
         <if test="title != null and title != ''">, title</if>
         <if test="description != null">, description</if>
-        <if test="thumbnailUrl != null">, thumbnail_url</if>
+        <if test="thumbnailFileName != null">, thumbnail_file_name</if>
         <if test="nodes != null">, nodes</if>
         <if test="edges != null">, edges</if>
         <if test="settings != null">, settings</if>
@@ -83,7 +83,7 @@
         #{userName}
         <if test="title != null and title != ''">, #{title}</if>
         <if test="description != null">, #{description}</if>
-        <if test="thumbnailUrl != null">, #{thumbnailUrl}</if>
+        <if test="thumbnailFileName != null">, #{thumbnailFileName}</if>
         <if test="nodes != null">, #{nodes,typeHandler=com.conwise.handler.JsonTypeHandler}</if>
         <if test="edges != null">, #{edges,typeHandler=com.conwise.handler.JsonTypeHandler}</if>
         <if test="settings != null">, #{settings,typeHandler=com.conwise.handler.JsonTypeHandler}</if>
@@ -100,8 +100,8 @@
         <if test="description != null">
             description = #{description},
         </if>
-        <if test="thumbnailUrl != null">
-            thumbnail_url = #{thumbnailUrl},
+        <if test="thumbnailFileName != null">
+            thumbnail_file_name = #{thumbnailFileName},
         </if>
         <if test="settings != null">
             settings = #{settings,typeHandler=com.conwise.handler.JsonTypeHandler},
