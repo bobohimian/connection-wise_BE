@@ -38,6 +38,7 @@ spring:
       chat:
         options:
           model: deepseek-chat
+        api-key: ${DEEPSEEK_API_KEY}
 minio:
   endpoint: minio.zeabur.internal
   credentials:
