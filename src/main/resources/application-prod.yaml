@@ -23,13 +23,13 @@ spring:
   datasource:
     url: jdbc:postgresql://postgresql.zeabur.internal:5432/conwise_db
     username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+    password:
     driver-class-name: org.postgresql.Driver
   data:
     redis:
       host: redis.zeabur.internal
       port: 6379
-      #      password: K97BDIufV2H0gYxjv18p6S35nGoAy4Ld
+      password: ${REDIS_PASSWORD}
       database: 0
   ai:
     openai:
