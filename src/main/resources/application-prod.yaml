@@ -4,10 +4,10 @@ server:
     context-path: /api
     session:
       cookie:
-        max-age: 3600
+        max-age: 36000
         path: /
         name: SESSIONID
-      timeout: 3600
+      timeout: 36000
 mybatis:
   mapper-locations: classpath:mapper/*.xml
   type-aliases-package: com.conwise.model
@@ -40,7 +40,7 @@ spring:
           model: deepseek-chat
         api-key: ${DEEPSEEK_API_KEY}
 minio:
-  endpoint: https://minio.zeabur.internal/
+  endpoint: http://minio.zeabur.internal/
   credentials:
     username: ${MINIO_USERNAME}
     password: ${MINIO_PASSWORD}
