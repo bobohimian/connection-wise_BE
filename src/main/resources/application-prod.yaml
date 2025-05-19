@@ -40,7 +40,7 @@ spring:
           model: deepseek-chat
         api-key: ${DEEPSEEK_API_KEY}
 minio:
-  endpoint: http://minio.zeabur.internal/
+  endpoint: http://minio.zeabur.internal:9000/
   credentials:
     username: ${MINIO_USERNAME}
     password: ${MINIO_PASSWORD}
