@@ -1,16 +1,13 @@
 package com.conwise.service.impl;
 
-import com.conwise.model.Node;
 import com.conwise.model.RelationshipGraph;
 import com.conwise.service.AiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
@@ -32,10 +29,10 @@ public class AiServiceImpl implements AiService {
                 new ParameterizedTypeReference<List<String>>() {
                 }
         );
-        this.listStringConverter = listBeanOutputConverter.toString();
+        this.listStringConverter = listBeanOutputConverter.getFormat();
         BeanOutputConverter<RelationshipGraph> relationshipGraphBeanOutputConverter = new BeanOutputConverter<>(new ParameterizedTypeReference<RelationshipGraph>() {
         });
-        this.relationShipGraphConverter = relationshipGraphBeanOutputConverter.toString();
+        this.relationShipGraphConverter = relationshipGraphBeanOutputConverter.getFormat();
     }
 
     @Override
@@ -49,6 +46,7 @@ public class AiServiceImpl implements AiService {
 
     @Override
     public Flux<ServerSentEvent<String>> associate(String userInput) {
+
         String prompt = String.format("""
                 现在需要基于一段信息,做知识扩展.请你以指定格式返回扩展的方向,方向只需要提供简单的描述,指出4个方向即可.只返回纯 JSON 格式，不包含任何额外的符号、反引号、代码块标记或文本说明
                 
