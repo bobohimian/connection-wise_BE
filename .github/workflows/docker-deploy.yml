@@ -29,12 +29,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ secrets.DOCKER_USERNAME }}/connectwise-backend:latest
-          build-args: |
-            POSTGRES_USERNAME=${{ secrets.POSTGRES_USERNAME }}
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}
-            MINIO_USERNAME=${{ secrets.MINIO_USERNAME }}
-            MINIO_PASSWORD=${{ secrets.MINIO_PASSWORD }}
-            REDIS=${{ secrets.REDIS_PASSWORD }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
