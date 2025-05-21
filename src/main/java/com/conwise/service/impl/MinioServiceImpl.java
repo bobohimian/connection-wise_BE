@@ -15,7 +15,6 @@ import java.util.UUID;
 public class MinioServiceImpl implements MinioService {
 
     private final MinioClient minioClient;
-    private final String endpoint;
     private final String bucketName;
 
     // 使用构造函数注入配置值
@@ -23,9 +22,8 @@ public class MinioServiceImpl implements MinioService {
             @Value("${minio.endpoint}") String endpoint,
             @Value("${minio.credentials.username}") String username,
             @Value("${minio.credentials.password}") String password,
-            @Value("${minio.bukcetName}") String bucketName
+            @Value("${minio.bucketName}") String bucketName
     ) {
-        this.endpoint = endpoint;
         this.bucketName = bucketName;
         this.minioClient = MinioClient.builder()
                 .endpoint(endpoint)

@@ -3,12 +3,10 @@ package com.conwise.service.impl;
 import com.conwise.helper.PostgresPathHelper;
 import com.conwise.mapper.CanvasMapper;
 import com.conwise.mapper.UserMapper;
-import com.conwise.model.Canvas;
-import com.conwise.model.Edge;
-import com.conwise.model.Node;
-import com.conwise.model.User;
+import com.conwise.model.*;
 import com.conwise.service.CanvasService;
 import com.conwise.service.MinioService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,7 +25,7 @@ public class CanvasServiceImpl implements CanvasService {
     private final Map<Integer, LinkedHashMap<String, Integer>> nodeIndexMap = new HashMap<>();
     private final Map<Integer, LinkedHashMap<String, Integer>> edgeindexMap = new HashMap<>();
 
-    @Value("${resoucre.images}")
+    @Value("${resource.images}")
     private String DEFAULT_THUMBNAIL_PATH;
 
     @Autowired
@@ -37,10 +35,13 @@ public class CanvasServiceImpl implements CanvasService {
         this.userMapper = userMapper;
     }
 
-    public Canvas getCanvasById(int id) {
+    public ApiResponse<Canvas> getCanvasById(int id) {
         LinkedHashMap<String, Integer> nodeIndexMapOfOneCanvas = new LinkedHashMap<>();
         LinkedHashMap<String, Integer> edgeIndexMapOfOneCanvas = new LinkedHashMap<>();
         Canvas canvas = canvasMapper.findById(id);
+        if (canvas == null) {
+            return ApiResponse.fail(ResponseCode.CANVAS_NOT_FOUND);
+        }
         List<Node> nodes = canvas.getNodes();
         for (int index = 0; index < nodes.size(); index++) {
             nodeIndexMapOfOneCanvas.put(nodes.get(index).getId(), index);
@@ -50,37 +51,58 @@ public class CanvasServiceImpl implements CanvasService {
             edgeIndexMapOfOneCanvas.put(edges.get(index).getId(), index);
         nodeIndexMap.put(id, nodeIndexMapOfOneCanvas);
         edgeindexMap.put(id, edgeIndexMapOfOneCanvas);
-        return canvas;
+        return ApiResponse.ok(canvas);
     }
 
-    public List<Canvas> getCanvasesByUserId(int userId) {
-        return canvasMapper.findByUserId(userId);
+    public ApiResponse<List<Canvas>> getCanvasesByUserId(int userId) {
+        List<Canvas> byUserId = canvasMapper.findByUserId(userId);
+        return ApiResponse.ok(byUserId);
     }
 
-    public boolean createCanvas(int userId) {
+    public ApiResponse<Void> createCanvas(int userId) {
         User user = userMapper.findById(userId);
         Canvas canvas = new Canvas();
         canvas.setUserId(userId);
         canvas.setUserName(user.getUsername());
         int insert = canvasMapper.insert(canvas);
         if (insert != 1) {
-            return false;
+            return ApiResponse.fail(ResponseCode.CANVAS_CREATE_FAILED);
         }
         String thumbnailFileName = "thumbnail_canvas_" + canvas.getId() + ".png";
         try {
-            minioService.uploadFile(DEFAULT_THUMBNAIL_PATH,thumbnailFileName);
+            minioService.uploadFile(DEFAULT_THUMBNAIL_PATH, thumbnailFileName);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return true;
+        return ApiResponse.ok();
     }
 
-    public boolean updateCanvas(Canvas canvas) {
-        return canvasMapper.update(canvas) > 0;
+    public ApiResponse<Void> updateCanvas(Canvas canvas) {
+        int updated = canvasMapper.update(canvas);
+        if (updated != 1) {
+            return ApiResponse.fail(ResponseCode.CANVAS_UPDATE_FAILED);
+        }
+        return ApiResponse.ok();
     }
 
-    public boolean deleteCanvas(int id) {
-        return canvasMapper.deleteById(id) > 0;
+    public ApiResponse<Void> deleteCanvas(int id) {
+        int deleted = canvasMapper.deleteById(id);
+        if (deleted != 1) {
+            return ApiResponse.fail(ResponseCode.CANVAS_DELETE_FAILED);
+        }
+        return ApiResponse.ok();
+    }
+
+
+
+    @Override
+    public ApiResponse<Void> saveThumbnail(int canvasId, MultipartFile thumbnail){
+        try {
+            minioService.uploadFile(thumbnail, "thumbnail_canvas_" + canvasId + ".png");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return ApiResponse.ok();
     }
 
     public boolean addNode(int canvasId, String nodeId, String node) {
@@ -149,14 +171,5 @@ public class CanvasServiceImpl implements CanvasService {
         return rowsUpdated > 0;
     }
 
-    @Override
-    public boolean saveThumbnail(int canvasId, MultipartFile thumbnail) throws IOException {
-        String thumbnailFileName;
-        try {
-            thumbnailFileName = minioService.uploadFile(thumbnail, "thumbnail_canvas_" + canvasId+".png");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return thumbnailFileName != null;
-    }
+
 }

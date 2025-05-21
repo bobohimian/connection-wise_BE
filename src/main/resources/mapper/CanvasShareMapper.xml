@@ -10,6 +10,19 @@
         <result column="permission" property="permission" jdbcType="VARCHAR"/>
     </resultMap>
 
+    <resultMap id="CanvasResultMap" type="com.conwise.model.Canvas">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="title" property="title" />
+        <result column="description" property="description" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="settings" property="settings" />
+        <result column="user_name" property="userName" />
+        <result column="thumbnail_file_name" property="thumbnailFileName" />
+        <!-- 如果需要映射分享权限 -->
+<!--        <result column="permission" property="permission" />-->
+    </resultMap>
 
     <!-- 基础列 -->
     <sql id="Base_Column_List">
@@ -89,6 +102,29 @@
         SELECT
         <include refid="Base_Column_List"/>
         FROM canvas_shares
+    </select>
+    <select id="selectCanvasesByUserId" resultType="com.conwise.model.Canvas">
+        SELECT
+            c.id,
+            c.user_id,
+            c.title,
+            c.description,
+            c.created_at,
+            c.updated_at,
+            c.nodes,
+            c.edges,
+            c.settings,
+            c.user_name,
+            c.thumbnail_file_name,
+            cs.permission
+        FROM
+            public.canvases c
+                INNER JOIN
+                public.canvas_shares cs ON c.id = cs.canvas_id
+        WHERE
+            cs.user_id = #{userId}
+        ORDER BY
+            c.updated_at DESC;
     </select>
 
 

@@ -44,6 +44,6 @@ minio:
   credentials:
     username: ${MINIO_USERNAME}
     password: ${MINIO_PASSWORD}
-  bukcetName: bucket1
-resoucre:
+  bucketName: bucket1
+resource:
   images: static/images/default-thumbnail.png

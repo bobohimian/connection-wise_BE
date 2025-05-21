@@ -16,16 +16,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        // 1. 检查是否有HttpSession
-        System.out.println("preHandle");
-        HttpSession session = request.getSession(false);
-        if (session == null) {
-            // 没有session，返回未授权错误
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("未登录或会话已过期");
-            return false;
-        }
-
+        // 1. 获取HttpSession,如果没有则创建
+        HttpSession session = request.getSession(true);
         // 2. 获取session中的用户对象
         User userObj = (User)session.getAttribute(USER_KEY);
         if (userObj == null) {

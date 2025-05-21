@@ -1,5 +1,6 @@
 package com.conwise.controller;
 
+import com.conwise.model.ApiResponse;
 import com.conwise.model.Canvas;
 import com.conwise.model.CanvasShare;
 import com.conwise.model.User;
@@ -21,36 +22,25 @@ public class ShareController {
 
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Canvas>> getCanvasShareByUserId(@PathVariable("userId") int userId) {
-        List<Canvas> canvasList = canvasShareService.getCanvasShareByUserId(userId);
-        return ResponseEntity.ok(canvasList);
+    public ResponseEntity<ApiResponse<List<Canvas>>> getCanvasShareByUserId(@PathVariable("userId") int userId) {
+        return ResponseEntity.ok(canvasShareService.getCanvasShareByUserId(userId));
     }
 
     @GetMapping("/{canvasId}")
-    public ResponseEntity<List<User>> getSharedUsersByCanvasId(@PathVariable("canvasId") int canvasId) {
-        List<User> canvasList = canvasShareService.getSharedUsersByCanvasId(canvasId);
-        return ResponseEntity.ok(canvasList);
+    public ResponseEntity<ApiResponse<List<User>>> getSharedUsersByCanvasId(@PathVariable("canvasId") int canvasId) {
+        return ResponseEntity.ok(canvasShareService.getSharedUsersByCanvasId(canvasId));
     }
 
     @PostMapping
-    public ResponseEntity<Void> shareCanvas(@RequestBody CanvasShare canvasShare) {
-        boolean success = canvasShareService.shareCanvas(canvasShare);
-        if (!success)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> shareCanvas(@RequestBody CanvasShare canvasShare) {
+        return ResponseEntity.ok(canvasShareService.shareCanvas(canvasShare));
     }
     @DeleteMapping("/{shareId}")
-    public ResponseEntity<Void> deleteShare(@PathVariable("shareId") int shareId) {
-        boolean success = canvasShareService.deleteShare(shareId);
-        if(!success)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> deleteShare(@PathVariable("shareId") int shareId) {
+        return ResponseEntity.ok(canvasShareService.deleteShare(shareId));
     }
     @PutMapping
-    public ResponseEntity<Void> updateShare(@RequestBody CanvasShare canvasShare) {
-        boolean success = canvasShareService.updateShare(canvasShare);
-        if (!success)
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> updateShare(@RequestBody CanvasShare canvasShare) {
+        return ResponseEntity.ok(canvasShareService.updateShare(canvasShare));
     }
 }

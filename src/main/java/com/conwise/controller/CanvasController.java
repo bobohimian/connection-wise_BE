@@ -1,5 +1,6 @@
 package com.conwise.controller;
 
+import com.conwise.model.ApiResponse;
 import com.conwise.model.Canvas;
 import com.conwise.model.CanvasShare;
 import com.conwise.model.User;
@@ -28,57 +29,34 @@ public class CanvasController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<Canvas> getCanvasById(@PathVariable int id) {
-        Canvas canvas = canvasService.getCanvasById(id);
-        if (canvas != null) {
-            return ResponseEntity.ok(canvas);
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<Canvas>> getCanvasById(@PathVariable int id) {
+        ApiResponse<Canvas> apiResponse = canvasService.getCanvasById(id);
+        return ResponseEntity.ok(apiResponse);
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Canvas>> getCanvasesByUserId(@PathVariable int userId) {
+    public ResponseEntity<ApiResponse<List<Canvas>>> getCanvasesByUserId(@PathVariable int userId) {
         return ResponseEntity.ok(canvasService.getCanvasesByUserId(userId));
     }
 
     @PostMapping("/create/{userId}")
-    public ResponseEntity<Canvas> createCanvas(@PathVariable int userId) {
-        boolean created = canvasService.createCanvas(userId);
-        if (created) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public ResponseEntity<ApiResponse<Void>> createCanvas(@PathVariable int userId) {
+        return ResponseEntity.ok(canvasService.createCanvas(userId));
     }
 
     @PutMapping
-    public ResponseEntity<Void> updateCanvas(@RequestBody Canvas canvas) {
-        boolean updated = canvasService.updateCanvas(canvas);
-        if (updated) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<Void>> updateCanvas(@RequestBody Canvas canvas) {
+        return ResponseEntity.ok(canvasService.updateCanvas(canvas));
     }
 
     @DeleteMapping("/{canvasId}")
-    public ResponseEntity<Void> deleteCanvas(@PathVariable("canvasId") int canvasId) {
-        boolean deleted = canvasService.deleteCanvas(canvasId);
-        if (deleted) {
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<ApiResponse<Void>> deleteCanvas(@PathVariable("canvasId") int canvasId) {
+
+        return ResponseEntity.ok(canvasService.deleteCanvas(canvasId));
     }
 
     @PostMapping("/uploadThumbnail")
-    public ResponseEntity<Void> uploadThumbnail(@RequestParam("canvasId") int canvasId, @RequestParam("thumbnail") MultipartFile thumbnail) {
-        boolean success = false;
-        try {
-            success = canvasService.saveThumbnail(canvasId, thumbnail);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if(!success) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ApiResponse<Void>> uploadThumbnail(@RequestParam("canvasId") int canvasId, @RequestParam("thumbnail") MultipartFile thumbnail) {
+        return ResponseEntity.ok(canvasService.saveThumbnail(canvasId, thumbnail));
     }
 }

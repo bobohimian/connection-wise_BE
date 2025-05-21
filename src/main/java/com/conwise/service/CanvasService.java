@@ -2,6 +2,7 @@ package com.conwise.service;
 
 import com.conwise.helper.PostgresPathHelper;
 import com.conwise.mapper.CanvasMapper;
+import com.conwise.model.ApiResponse;
 import com.conwise.model.Canvas;
 import com.conwise.model.Edge;
 import com.conwise.model.Node;
@@ -18,27 +19,28 @@ import java.util.Map;
 
 public interface CanvasService {
 
-    public Canvas getCanvasById(int id);
+    public ApiResponse<Canvas> getCanvasById(int id);
 
-    public List<Canvas> getCanvasesByUserId(int userId);
+    public ApiResponse<List<Canvas>> getCanvasesByUserId(int userId);
 
-    public boolean createCanvas(int userId);
+    public ApiResponse<Void> createCanvas(int userId);
 
-    public boolean updateCanvas(Canvas canvas) ;
+    public ApiResponse<Void> updateCanvas(Canvas canvas);
 
-    public boolean deleteCanvas(int id);
-    
-    public boolean addNode(int canvasId,String nodeId,String node) ;
+    public ApiResponse<Void> deleteCanvas(int id);
 
-    public boolean deleteNode(int canvasId,String nodeId);
+    public ApiResponse<Void> saveThumbnail(int canvasId, MultipartFile thumbnail);
 
-    public boolean updateNodeAttribute(int canvasId,String nodeId, List<String> pathList, String newValue);
+    public boolean addNode(int canvasId, String nodeId, String node);
 
-    public boolean addEdge(int canvasId,String edgeId,String edge);
+    public boolean deleteNode(int canvasId, String nodeId);
 
-    public boolean deleteEdge(int canvasId,String edgeId) ;
+    public boolean updateNodeAttribute(int canvasId, String nodeId, List<String> pathList, String newValue);
 
-    public boolean updateEdgeAttribute(int canvasId,String edgeId, List<String> pathList, String newValue) ;
+    public boolean addEdge(int canvasId, String edgeId, String edge);
 
-    boolean saveThumbnail(int canvasId, MultipartFile thumbnail) throws IOException;
+    public boolean deleteEdge(int canvasId, String edgeId);
+
+    public boolean updateEdgeAttribute(int canvasId, String edgeId, List<String> pathList, String newValue);
+
 }

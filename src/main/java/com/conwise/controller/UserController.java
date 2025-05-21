@@ -1,8 +1,6 @@
 package com.conwise.controller;
 
-import com.conwise.model.LoginUser;
-import com.conwise.model.RegisterUser;
-import com.conwise.model.User;
+import com.conwise.model.*;
 import com.conwise.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -22,50 +20,28 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginUser loginUser, HttpSession session) {
-        User user = userService.login(loginUser);
-        if (user != null) {
-            session.setAttribute("user", user);
-            return ResponseEntity.ok(user);
-        }
-        session.invalidate();
-        return ResponseEntity.status(401).build();
+    public ResponseEntity<ApiResponse<User>> login(@RequestBody LoginUser loginUser, HttpSession session) {
+        return ResponseEntity.ok(userService.login(loginUser,session));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<User> logout(HttpSession session) {
-        session.invalidate();
-        return ResponseEntity.ok(null);
+    public ResponseEntity<ApiResponse<Void>> logout(HttpSession session) {
+        return ResponseEntity.ok(userService.logout(session));
     }
 
     @PostMapping("/check-auth")
-    public ResponseEntity<User> checkAuth(HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            session.invalidate();
-            System.out.println("未登录");
-            return ResponseEntity.status(401).body(null);
-        }
-        return ResponseEntity.ok(user);
+    public ResponseEntity<ApiResponse<User>> checkAuth(HttpSession session) {
+        return ResponseEntity.ok(userService.validate(session));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterUser user) {
-        String username = user.getUsername();
-        System.out.println("username = " + username);
-        String password = user.getPassword();
-        System.out.println("password = " + password);
-        String email = user.getEmail();
-        System.out.println("email = " + email);
-        boolean registerSuccess = userService.register(user);
-        if (!registerSuccess)
-            return ResponseEntity.status(409).body(null);
-        return ResponseEntity.ok("success");
+    public ResponseEntity<ApiResponse<Void>> register(@RequestBody RegisterUser user) {
+        return ResponseEntity.ok(userService.register(user));
 
     }
+
     @GetMapping("/search")
-    public ResponseEntity<User> searchByUserName(@RequestParam("username") String username) {
-        User user=userService.searchByUserName(username);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<ApiResponse<User>> searchByUserName(@RequestParam("username") String username) {
+        return ResponseEntity.ok(userService.searchByUserName(username));
     }
 }

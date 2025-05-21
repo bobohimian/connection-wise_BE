@@ -53,6 +53,8 @@
             canvases
         WHERE
             user_id = #{userId}
+        ORDER BY
+            updated_at DESC;
     </select>
 
     <select id="findByIdIn" resultType="com.conwise.model.Canvas">
@@ -99,9 +101,6 @@
         </if>
         <if test="description != null">
             description = #{description},
-        </if>
-        <if test="thumbnailFileName != null">
-            thumbnail_file_name = #{thumbnailFileName},
         </if>
         <if test="settings != null">
             settings = #{settings,typeHandler=com.conwise.handler.JsonTypeHandler},

@@ -1,5 +1,6 @@
 package com.conwise.mapper;
 
+import com.conwise.model.Canvas;
 import com.conwise.model.CanvasShare;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -31,7 +32,10 @@ public interface CanvasShareMapper {
     
     // 根据画布ID查询所有分享记录
     List<CanvasShare> selectByCanvasId(Integer canvasId);
-    
+
+    // 根据用户ID查询所有分享给该用户的画布
+    List<Canvas> selectCanvasesByUserId(Integer userId);
+
     // 根据用户ID查询所有分享给该用户的记录
     List<CanvasShare> selectByUserId(Integer userId);
     

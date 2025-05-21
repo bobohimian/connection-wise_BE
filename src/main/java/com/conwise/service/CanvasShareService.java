@@ -1,5 +1,6 @@
 package com.conwise.service;
 
+import com.conwise.model.ApiResponse;
 import com.conwise.model.Canvas;
 import com.conwise.model.CanvasShare;
 import com.conwise.model.User;
@@ -7,13 +8,13 @@ import com.conwise.model.User;
 import java.util.List;
 
 public interface CanvasShareService {
-    boolean shareCanvas(CanvasShare canvasShare);
+    ApiResponse<Void> shareCanvas(CanvasShare canvasShare);
 
-    boolean deleteShare(int canvasShare);
+    ApiResponse<Void> deleteShare(int canvasShare);
 
-    boolean updateShare(CanvasShare canvasShare);
+    ApiResponse<Void> updateShare(CanvasShare canvasShare);
 
-    List<Canvas> getCanvasShareByUserId(int userId);
+    ApiResponse<List<Canvas>> getCanvasShareByUserId(int userId);
 
-    List<User> getSharedUsersByCanvasId(int canvasId);
+    ApiResponse<List<User>> getSharedUsersByCanvasId(int canvasId);
 }
