@@ -90,6 +90,11 @@ public class CanvasServiceImpl implements CanvasService {
         if (deleted != 1) {
             return ApiResponse.fail(ResponseCode.CANVAS_DELETE_FAILED);
         }
+        try {
+            minioService.deleteFile("thumbnail_canvas_" + id + ".png");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         return ApiResponse.ok();
     }
 

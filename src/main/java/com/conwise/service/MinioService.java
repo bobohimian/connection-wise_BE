@@ -10,5 +10,6 @@ import java.security.NoSuchAlgorithmException;
 public interface MinioService {
     public String uploadFile(MultipartFile file,String newFileName) throws Exception;
     public void uploadFile(String path,String newFileName) throws Exception;
+    public void deleteFile(String fileName) throws Exception;
 
 }

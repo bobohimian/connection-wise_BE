@@ -3,6 +3,7 @@ package com.conwise.service.impl;
 import com.conwise.service.MinioService;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class MinioServiceImpl implements MinioService {
                 .credentials(username, password)
                 .build();
     }
-
+    // 上传表单提交的数据文件
     @Override
     public String uploadFile(MultipartFile file, String newFileName) throws Exception {
         // 生成唯一文件名
@@ -81,6 +82,24 @@ public class MinioServiceImpl implements MinioService {
                             .contentType("image/png")
                             .build()
             );
+        }
+    }
+    // 删除 MinIO 中的指定文件
+    @Override
+    public void deleteFile(String fileName) throws Exception {
+        if (fileName == null || fileName.isEmpty()) {
+            throw new IllegalArgumentException("文件名不能为空");
+        }
+
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(fileName)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new Exception("删除文件失败: " + fileName, e);
         }
     }
 
