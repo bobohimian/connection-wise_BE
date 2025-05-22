@@ -44,4 +44,4 @@ minio:
     password: #
   bukcetName: #
 resoucre:
-  images: static/images/default-thumbnail.png
+  images: static/images/default-thumbnail.webp

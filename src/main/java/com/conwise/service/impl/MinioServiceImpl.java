@@ -82,7 +82,7 @@ public class MinioServiceImpl implements MinioService {
                             .bucket(bucketName)
                             .object(newFileName)
                             .stream(inputStream, resource.contentLength(), -1)
-                            .contentType("image/png")
+                            .contentType("image/webp")
                             .build()
             );
         }
@@ -133,7 +133,7 @@ public class MinioServiceImpl implements MinioService {
     }
 
     @Override
-    public CompletableFuture<Void> deleteFileAsync(String path){
+    public CompletableFuture<Void> deleteFileAsync(String path) {
         return CompletableFuture.runAsync(() -> {
             try {
                 this.deleteFile(path);
@@ -147,8 +147,10 @@ public class MinioServiceImpl implements MinioService {
     private String determineContentType(String fileName) {
         if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
             return "image/jpeg";
-        } else if (fileName.endsWith(".png")) {
+        } else if (fileName.endsWith(".png"))
             return "image/png";
+        else if (fileName.endsWith(".webp")) {
+            return "image/webp";
         } else if (fileName.endsWith(".gif")) {
             return "image/gif";
         } else {

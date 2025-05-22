@@ -46,4 +46,4 @@ minio:
     password: ${MINIO_PASSWORD}
   bucketName: bucket1
 resource:
-  images: static/images/default-thumbnail.png
+  images: static/images/default-thumbnail.webp

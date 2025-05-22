@@ -65,7 +65,7 @@ public class CanvasServiceImpl implements CanvasService {
         if (insert != 1) {
             return ApiResponse.fail(ResponseCode.CANVAS_CREATE_FAILED);
         }
-        String thumbnailFileName = "thumbnail_canvas_" + canvas.getId() + ".png";
+        String thumbnailFileName = "thumbnail_canvas_" + canvas.getId() + ".webp";
         minioService.uploadClassPathFileAsync(DEFAULT_THUMBNAIL_PATH, thumbnailFileName)
                 .thenAccept(result -> {
                     System.out.println(String.format("缩略图[%s] 上传成功", thumbnailFileName));
@@ -91,7 +91,7 @@ public class CanvasServiceImpl implements CanvasService {
             return ApiResponse.fail(ResponseCode.CANVAS_DELETE_FAILED);
         }
 
-        String thumbnailFileName = "thumbnail_canvas_" + id + ".png";
+        String thumbnailFileName = "thumbnail_canvas_" + id + ".webp";
         minioService.deleteFileAsync(thumbnailFileName)
                 .thenAccept(result -> {
                     System.out.println(String.format("缩略图[%s] 删除成功", thumbnailFileName));
@@ -106,7 +106,7 @@ public class CanvasServiceImpl implements CanvasService {
 
     @Override
     public ApiResponse<Void> saveThumbnail(int canvasId, MultipartFile thumbnail) {
-        String thumbnailFileName = "thumbnail_canvas_" + canvasId + ".png";
+        String thumbnailFileName = "thumbnail_canvas_" + canvasId + ".webp";
         minioService.uploadFileAsync(thumbnail, thumbnailFileName)
                 .thenAccept(fileName -> {
                     System.out.println(String.format("缩略图[%s] 更新成功", fileName));
