@@ -19,28 +19,28 @@ import java.util.Map;
 
 public interface CanvasService {
 
-    public ApiResponse<Canvas> getCanvasById(int id);
+    ApiResponse<Canvas> getCanvasById(int id);
 
-    public ApiResponse<List<Canvas>> getCanvasesByUserId(int userId);
+    ApiResponse<List<Canvas>> getCanvasesByUserId(int userId);
 
-    public ApiResponse<Void> createCanvas(int userId);
+    ApiResponse<Void> createCanvas(int userId);
 
-    public ApiResponse<Void> updateCanvas(Canvas canvas);
+    ApiResponse<Void> updateCanvas(Canvas canvas);
 
-    public ApiResponse<Void> deleteCanvas(int id);
+    ApiResponse<Void> deleteCanvas(int id);
 
-    public ApiResponse<Void> saveThumbnail(int canvasId, MultipartFile thumbnail);
+    ApiResponse<Void> saveThumbnail(int canvasId, MultipartFile thumbnail);
 
-    public boolean addNode(int canvasId, String nodeId, String node);
+    boolean addNode(int canvasId, String nodeId, String node);
 
-    public boolean deleteNode(int canvasId, String nodeId);
+    boolean deleteNode(int canvasId, String nodeId);
 
-    public boolean updateNodeAttribute(int canvasId, String nodeId, List<String> pathList, String newValue);
+    boolean updateNodeAttribute(int canvasId, String nodeId, List<String> pathList, String newValue);
 
-    public boolean addEdge(int canvasId, String edgeId, String edge);
+    boolean addEdge(int canvasId, String edgeId, String edge);
 
-    public boolean deleteEdge(int canvasId, String edgeId);
+    boolean deleteEdge(int canvasId, String edgeId);
 
-    public boolean updateEdgeAttribute(int canvasId, String edgeId, List<String> pathList, String newValue);
+    boolean updateEdgeAttribute(int canvasId, String edgeId, List<String> pathList, String newValue);
 
 }

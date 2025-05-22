@@ -1,15 +1,20 @@
 package com.conwise.service;
 
-import io.minio.errors.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.CompletableFuture;
 
 public interface MinioService {
-    public String uploadFile(MultipartFile file,String newFileName) throws Exception;
-    public void uploadFile(String path,String newFileName) throws Exception;
-    public void deleteFile(String fileName) throws Exception;
+    String uploadFile(MultipartFile file, String newFileName) throws Exception;
+
+    void uploadClassPathFile(String path, String newFileName) throws Exception;
+
+    void deleteFile(String fileName) throws Exception;
+
+    CompletableFuture<String> uploadFileAsync(MultipartFile file, String newFileName);
+
+    CompletableFuture<Void> uploadClassPathFileAsync(String path, String newFileName);
+
+    CompletableFuture<Void> deleteFileAsync(String path);
 
 }

@@ -6,11 +6,13 @@ import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class MinioServiceImpl implements MinioService {
@@ -31,6 +33,7 @@ public class MinioServiceImpl implements MinioService {
                 .credentials(username, password)
                 .build();
     }
+
     // 上传表单提交的数据文件
     @Override
     public String uploadFile(MultipartFile file, String newFileName) throws Exception {
@@ -40,7 +43,7 @@ public class MinioServiceImpl implements MinioService {
             String fileExtension = originalFilename != null && originalFilename.contains(".")
                     ? originalFilename.substring(originalFilename.lastIndexOf("."))
                     : ".unknown";
-            newFileName = UUID.randomUUID().toString() + fileExtension;
+            newFileName = UUID.randomUUID() + fileExtension;
         }
         // 上传文件到 MinIO
         minioClient.putObject(
@@ -56,7 +59,7 @@ public class MinioServiceImpl implements MinioService {
     }
 
     // 重载方法，上传 resources 目录中的文件
-    public void uploadFile(String resourcePath, String newFileName) throws Exception {
+    public void uploadClassPathFile(String resourcePath, String newFileName) throws Exception {
         // 从 resources 目录读取文件
         ClassPathResource resource = new ClassPathResource(resourcePath);
         if (!resource.exists()) {
@@ -84,6 +87,7 @@ public class MinioServiceImpl implements MinioService {
             );
         }
     }
+
     // 删除 MinIO 中的指定文件
     @Override
     public void deleteFile(String fileName) throws Exception {
@@ -101,6 +105,42 @@ public class MinioServiceImpl implements MinioService {
         } catch (Exception e) {
             throw new Exception("删除文件失败: " + fileName, e);
         }
+    }
+
+    @Override
+    @Async("asyncExecutor")
+    public CompletableFuture<String> uploadFileAsync(MultipartFile file, String newFileName) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                this.uploadFile(file, newFileName);
+                return newFileName;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    @Async("asyncExecutor")
+    public CompletableFuture<Void> uploadClassPathFileAsync(String path, String newFileName) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                this.uploadClassPathFile(path, newFileName);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> deleteFileAsync(String path){
+        return CompletableFuture.runAsync(() -> {
+            try {
+                this.deleteFile(path);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     // 根据文件名确定 ContentType
