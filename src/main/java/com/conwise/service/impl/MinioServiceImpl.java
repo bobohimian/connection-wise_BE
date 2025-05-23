@@ -74,7 +74,7 @@ public class MinioServiceImpl implements MinioService {
             String fileExtension = originalFilename != null && originalFilename.contains(".")
                     ? originalFilename.substring(originalFilename.lastIndexOf("."))
                     : ".unknown";
-            newFileName = UUID.randomUUID().toString() + fileExtension;
+            newFileName = UUID.randomUUID() + fileExtension;
         }
 
         // 上传文件到 MinIO
@@ -84,7 +84,7 @@ public class MinioServiceImpl implements MinioService {
                             .bucket(bucketName)
                             .object(newFileName)
                             .stream(inputStream, resource.contentLength(), -1)
-                            .contentType("image/webp")
+                            .contentType(this.determineContentType(newFileName))
                             .build()
             );
         }
@@ -136,6 +136,7 @@ public class MinioServiceImpl implements MinioService {
     }
 
     @Override
+    @Async("asyncExecutor")
     public CompletableFuture<Void> deleteFileAsync(String path) {
         return CompletableFuture.runAsync(() -> {
             try {

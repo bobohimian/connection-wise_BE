@@ -2,15 +2,17 @@ package com.conwise.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
 
 @Configuration
+@EnableAsync
 public class AsyncConfig {
 
     @Bean(name = "asyncExecutor") // 定义一个 Spring Bean，名称为 "asyncExecutor"，用于异步任务执行
-    public Executor asyncExecutor() {
+    public Executor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor(); // 创建一个线程池任务执行器对象，用于管理异步任务的线程池
 
         // 核心线程数是指线程池中始终保持活跃的线程数，即使没有任务，这些线程也不会被销毁
