@@ -37,3 +37,4 @@ build/
 
 
 src/main/resources/application-dev.yaml
+/logs/application.log
