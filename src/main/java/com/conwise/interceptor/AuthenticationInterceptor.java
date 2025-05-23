@@ -38,27 +38,21 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             response.getWriter().write("没有权限访问该资源");
             return false;
         }
-
+        request.setAttribute("userId", userId);
         // 验证通过，继续处理请求
         return true;
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
         // 请求处理后的操作，如果需要的话
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex){
         // 请求完成后的操作，如果需要的话
     }
 
-    // 从用户对象中获取用户ID的方法
-    private Long getUserId(User userObj) {
-        // 根据您的用户对象类型实现此方法
-        // 例如：return ((User) userObj).getId();
-        return null; // 替换为实际实现
-    }
 
     // 检查用户是否有权限访问资源的方法
     private boolean hasPermission(int userId, String requestURI) {

@@ -4,6 +4,7 @@ import com.conwise.mapper.UserMapper;
 import com.conwise.model.*;
 import com.conwise.service.UserService;
 import jakarta.servlet.http.HttpSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -52,11 +53,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public ApiResponse<Void> register(RegisterUser user) {
         String username = user.getUsername();
-        System.out.println("username = " + username);
         String password = user.getPassword();
-        System.out.println("password = " + password);
         String email = user.getEmail();
-        System.out.println("email = " + email);
+
         if (username.isEmpty() || password.isEmpty() || email.isEmpty())
             return ApiResponse.fail(ResponseCode.USER_REGISTER_FAILED);
 

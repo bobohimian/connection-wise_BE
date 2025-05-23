@@ -173,7 +173,6 @@ public class AiServiceImpl implements AiService {
         String result = chatClient.prompt()
                 .user(prompt)
                 .call().content();
-        System.out.println(result);
         return result;
     }
 

@@ -6,6 +6,7 @@ import com.conwise.mapper.UserMapper;
 import com.conwise.model.*;
 import com.conwise.service.CanvasService;
 import com.conwise.service.MinioService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.*;
 
 @Service
+@Slf4j
 public class CanvasServiceImpl implements CanvasService {
 
     private final MinioService minioService;
@@ -67,11 +69,9 @@ public class CanvasServiceImpl implements CanvasService {
         }
         String thumbnailFileName = "thumbnail_canvas_" + canvas.getId() + ".webp";
         minioService.uploadClassPathFileAsync(DEFAULT_THUMBNAIL_PATH, thumbnailFileName)
-                .thenAccept(result -> {
-                    System.out.println(String.format("缩略图[%s] 上传成功", thumbnailFileName));
-                })
+                .thenAccept(result -> log.info("缩略图[{}] 上传成功", thumbnailFileName))
                 .exceptionally(throwable -> {
-                    System.err.println(String.format("缩略图[%s] 上传失败" + throwable.getMessage(), thumbnailFileName));
+                    log.error("缩略图[{}] 上传失败{}", thumbnailFileName, throwable.getMessage());
                     return null;
                 });
         return ApiResponse.ok();
@@ -93,11 +93,9 @@ public class CanvasServiceImpl implements CanvasService {
 
         String thumbnailFileName = "thumbnail_canvas_" + id + ".webp";
         minioService.deleteFileAsync(thumbnailFileName)
-                .thenAccept(result -> {
-                    System.out.println(String.format("缩略图[%s] 删除成功", thumbnailFileName));
-                })
+                .thenAccept(result -> log.info("缩略图[{}] 删除成功", thumbnailFileName))
                 .exceptionally(throwable -> {
-                    System.err.println(String.format("缩略图[%s] 删除失败" + throwable.getMessage(), thumbnailFileName));
+                    log.error("缩略图[{}] 删除失败 {}", thumbnailFileName, throwable.getMessage());
                     return null;
                 });
         return ApiResponse.ok();
@@ -108,11 +106,9 @@ public class CanvasServiceImpl implements CanvasService {
     public ApiResponse<Void> saveThumbnail(int canvasId, MultipartFile thumbnail) {
         String thumbnailFileName = "thumbnail_canvas_" + canvasId + ".webp";
         minioService.uploadFileAsync(thumbnail, thumbnailFileName)
-                .thenAccept(fileName -> {
-                    System.out.println(String.format("缩略图[%s] 更新成功", fileName));
-                })
+                .thenAccept(fileName -> log.info("缩略图[{}] 更新成功", fileName))
                 .exceptionally(throwable -> {
-                    System.err.println(String.format("缩略图[%s] 更新失败" + throwable.getMessage(), thumbnailFileName));
+                    log.error("缩略图[{}] 更新失败{}", thumbnailFileName, throwable.getMessage());
                     return null;
                 });
         return ApiResponse.ok();

@@ -5,6 +5,7 @@ import com.conwise.model.RequestMessage;
 import com.conwise.service.CanvasService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -20,14 +21,16 @@ import java.util.Map;
 
 
 @Component
+@Slf4j
 public class CanvasWebSocketHandler extends TextWebSocketHandler {
     private final CanvasService canvasService;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final Map<Integer, List<WebSocketSession>> sessionMap = new HashMap<>();
 
     @Autowired
-    public CanvasWebSocketHandler(CanvasService canvasService) {
+    public CanvasWebSocketHandler(CanvasService canvasService, ObjectMapper mapper) {
         this.canvasService = canvasService;
+        this.mapper = mapper;
     }
 
     @Override
@@ -42,38 +45,32 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
         Map<String, Object> attributes = session.getAttributes();
         int canvasId = (int) attributes.get("canvasId");
         RequestMessage myMessage = mapper.readValue(message.getPayload(), RequestMessage.class);
-        Operation operation;
-        System.out.println("type:" + myMessage.getType());
+        log.info(mapper.writeValueAsString(myMessage));
+        Operation operation=null;
         switch (myMessage.getType()) {
             case "addNode":
                 operation = myMessage.getOperation();
                 canvasService.addNode(canvasId, operation.getId(), operation.getValue());
-                System.out.println(operation.getValue());
                 break;
             case "deleteNode":
                 operation = myMessage.getOperation();
                 canvasService.deleteNode(canvasId, operation.getId());
-                System.out.println(operation.getId());
                 break;
             case "updateNode":
                 operation = myMessage.getOperation();
                 boolean nodeUpdated = canvasService.updateNodeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue());
-                System.out.println(myMessage.getOperation());
                 break;
             case "addEdge":
                 operation = myMessage.getOperation();
                 canvasService.addEdge(canvasId, operation.getId(), operation.getValue());
-                System.out.println(operation.getValue());
                 break;
             case "deleteEdge":
                 operation = myMessage.getOperation();
                 canvasService.deleteEdge(canvasId, operation.getId());
-                System.out.println(operation.getId());
                 break;
             case "updateEdge":
                 operation = myMessage.getOperation();
                 boolean edgeUpdated = canvasService.updateEdgeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue());
-                System.out.println(myMessage.getOperation());
                 break;
             default:
         }
@@ -86,7 +83,7 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
         Map<String, Object> attributes = session.getAttributes();
         int canvasId = (int) attributes.get("canvasId");
         sessionMap.get(canvasId).remove(session);
-        System.out.println("closed");
+        log.info("connection closed");
     }
 
     private void broadcast(WebSocketSession session, TextMessage message) {

@@ -4,6 +4,7 @@ import com.conwise.service.MinioService;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Async;
@@ -14,6 +15,7 @@ import java.io.InputStream;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Service
 public class MinioServiceImpl implements MinioService {
 
@@ -86,6 +88,7 @@ public class MinioServiceImpl implements MinioService {
                             .build()
             );
         }
+        log.info("uploadClassPathFile: {}", newFileName);
     }
 
     // 删除 MinIO 中的指定文件
