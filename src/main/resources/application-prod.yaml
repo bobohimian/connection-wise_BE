@@ -21,29 +21,31 @@ spring:
       flush-mode: on_save
       namespace: spring:session
   datasource:
-    url: jdbc:postgresql://postgresql.zeabur.internal:5432/conwise_db
-    username: ${POSTGRES_USERNAME}
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
   data:
     redis:
-      host: redis.zeabur.internal
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
-      database: 0
+      database: ${REDIS_DATABASE}
   ai:
     openai:
-      api-key: ${DEEPSEEK_API_KEY}
-      base-url: https://api.deepseek.com
+      api-key: ${OPEN_API_KEY}
+      base-url: ${OPEN_BASE_URL}
       chat:
         options:
-          model: deepseek-chat
-        api-key: ${DEEPSEEK_API_KEY}
+          model: ${CHAT_MODAL}
+#        api-key: ${OPEN_API_KEY}
 minio:
-  endpoint: http://minio.zeabur.internal:9000/
+  endpoint: ${MINIO_ENDPOINT_ENV}:${MINIO_PORT}/
   credentials:
-    username: ${MINIO_USERNAME}
-    password: ${MINIO_PASSWORD}
-  bucketName: bucket1
+    username: ${MINIO_ROOT_USER}
+    password: ${MINIO_ROOT_PASSWORD}
+  bucketName: ${MINIO_BUCKET}
+  secure: ${MINIO_SECURE}
 resource:
-  images: static/images/default-thumbnail.webp
+  static:
+    images: /app/resources/static/images/default-thumbnail.webp

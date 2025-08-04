@@ -11,9 +11,14 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 @Slf4j
 @Service
@@ -34,6 +39,10 @@ public class MinioServiceImpl implements MinioService {
                 .endpoint(endpoint)
                 .credentials(username, password)
                 .build();
+        log.info("endpoint: " + endpoint);
+        log.info("username: " + username);
+        log.info("password: " + password);
+        log.info("bucketName: " + bucketName);
     }
 
     // 上传表单提交的数据文件
@@ -61,34 +70,44 @@ public class MinioServiceImpl implements MinioService {
     }
 
     // 重载方法，上传 resources 目录中的文件
-    public void uploadClassPathFile(String resourcePath, String newFileName) throws Exception {
-        // 从 resources 目录读取文件
-        ClassPathResource resource = new ClassPathResource(resourcePath);
-        if (!resource.exists()) {
-            throw new Exception("资源文件未找到: " + resourcePath);
+    public void uploadFileSystemFile(String filePath, String newFileName) throws Exception {
+        // 1. 检查文件系统路径是否存在
+        File file = new File(filePath);
+        if (!file.exists()) {
+            throw new Exception("文件未找到: " + filePath);
+        }
+        if (!file.isFile()) {
+            throw new Exception("路径不是有效文件: " + filePath);
         }
 
-        // 生成唯一文件名
-        if (newFileName.isEmpty()) {
-            String originalFilename = resource.getFilename();
-            String fileExtension = originalFilename != null && originalFilename.contains(".")
-                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
-                    : ".unknown";
+        // 2. 生成唯一文件名（保留原逻辑）
+        if (newFileName == null || newFileName.isEmpty()) {
+            String originalFilename = file.getName();  // 从 File 对象获取原始文件名
+            String fileExtension = "";
+            int dotIndex = originalFilename.lastIndexOf(".");
+            if (dotIndex > 0) {
+                fileExtension = originalFilename.substring(dotIndex);  // 提取扩展名（含点）
+            } else {
+                fileExtension = ".unknown";  // 无扩展名时默认
+            }
             newFileName = UUID.randomUUID() + fileExtension;
         }
 
-        // 上传文件到 MinIO
-        try (InputStream inputStream = resource.getInputStream()) {
+        // 3. 读取文件流并上传到 MinIO
+        try (InputStream inputStream = new FileInputStream(file)) {  // 使用文件输入流
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
                             .object(newFileName)
-                            .stream(inputStream, resource.contentLength(), -1)
-                            .contentType(this.determineContentType(newFileName))
+                            .stream(inputStream, file.length(), -1)  // 使用文件大小（file.length()）
+                            .contentType(determineContentType(newFileName))  // 保留原方法
                             .build()
             );
+        } catch (Exception e) {
+            throw new Exception("上传失败: " + e.getMessage(), e);
         }
-        log.info("uploadClassPathFile: {}", newFileName);
+
+        log.info("uploadFileSystemFile 成功，新文件名: {}", newFileName);
     }
 
     // 删除 MinIO 中的指定文件
@@ -125,10 +144,10 @@ public class MinioServiceImpl implements MinioService {
 
     @Override
     @Async("asyncExecutor")
-    public CompletableFuture<Void> uploadClassPathFileAsync(String path, String newFileName) {
+    public CompletableFuture<Void> uploadFileSystemFileAsync(String path, String newFileName) {
         return CompletableFuture.runAsync(() -> {
             try {
-                this.uploadClassPathFile(path, newFileName);
+                this.uploadFileSystemFile(path, newFileName);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

@@ -22,7 +22,7 @@ public class CanvasServiceImpl implements CanvasService {
     private final CanvasMapper canvasMapper;
     private final UserMapper userMapper;
 
-    @Value("${resource.images}")
+    @Value("${resource.static.images}")
     private String DEFAULT_THUMBNAIL_PATH;
 
     @Autowired
@@ -55,7 +55,7 @@ public class CanvasServiceImpl implements CanvasService {
             return ApiResponse.fail(ResponseCode.CANVAS_CREATE_FAILED);
         }
         String thumbnailFileName = "thumbnail_canvas_" + canvas.getId() + ".webp";
-        minioService.uploadClassPathFileAsync(DEFAULT_THUMBNAIL_PATH, thumbnailFileName)
+        minioService.uploadFileSystemFileAsync(DEFAULT_THUMBNAIL_PATH, thumbnailFileName)
                 .thenAccept(result -> log.info("缩略图[{}] 上传成功", thumbnailFileName))
                 .exceptionally(throwable -> {
                     log.error("缩略图[{}] 上传失败{}", thumbnailFileName, throwable.getMessage());
