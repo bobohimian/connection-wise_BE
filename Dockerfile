@@ -8,6 +8,6 @@ RUN ./mvnw clean package -DskipTests
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
-
+COPY src/main/resources/static/images/default-thumbnail.webp /app/resources/static/images/default-thumbnail.webp
 EXPOSE 8080
 ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
