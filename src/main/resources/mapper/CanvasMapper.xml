@@ -130,16 +130,16 @@
     <delete id="deleteCanvasNode">
         UPDATE canvases
         SET
-            nodes=COALESCE(
+            nodes = COALESCE(
                     (SELECT
-                         jsonb_agg(elem)
+                         jsonb_agg(elem) -- 将过滤后的元素重新聚合成 JSONB 数组
                      FROM
-                         jsonb_array_elements(nodes) AS elem
+                         jsonb_array_elements(nodes) AS elem -- 展开原 nodes 数组为单个元素
                      WHERE
-                         elem ->> 'id' != #{nodeId}),
-                    '[]' :: jsonb)
+                         elem ->> 'id' != #{nodeId} -- 过滤掉 id 匹配的元素（保留其他元素）
+                    ), '[]' ::jsonb)
         WHERE
-            id = #{canvasId}
+            id = #{canvasId}; -- 替换为目标行的 id
     </delete>
 
     <update id="updateCanvasNodeAttribute" parameterType="map">
@@ -165,19 +165,19 @@
     </insert>
 
     <delete id="deleteCanvasEdge">
-        UPDATE canvases
+        UPDATE canvases -- 替换为实际表名
         SET
-            edges=COALESCE(
+            edges = COALESCE(
                     (SELECT
-                         jsonb_agg(elem)
+                         jsonb_agg(elem) -- 将过滤后的元素重新聚合成 JSONB 数组
                      FROM
-                         jsonb_array_elements(edges) AS elem
+                         jsonb_array_elements(edges) AS elem -- 展开原 nodes 数组为单个元素
                      WHERE
-                         elem ->> 'id' != #{edgeId}),
-                    '[]' :: jsonb
-                  )
+                         elem ->> 'id' != #{edgeId} -- 过滤掉 id 匹配的元素（保留其他元素）
+
+                    ), '[]' ::jsonb)
         WHERE
-            id = #{canvasId}
+            id = #{canvasId}; -- 替换为目标行的 id（例如 2）
     </delete>
     <update id="updateCanvasEdgeAttribute" parameterType="map">
         UPDATE canvases
@@ -190,5 +190,54 @@
                     )
         WHERE
             id = #{canvasId};
+    </update>
+    <update id="updateCanvasNodeAttributeWithNodeId">
+        UPDATE canvases
+        SET nodes = (
+            -- 子查询：展开、过滤、修改后重新聚合数组
+            SELECT jsonb_agg(
+                       -- 对匹配的元素修改属性，未匹配的保持原样
+                           CASE WHEN elem ->> 'id' = #{nodeId} THEN  -- 目标 id（注意 JSON 中 id 是字符串还是数字？）
+                                    jsonb_set(
+                                            elem,                  -- 原数组元素
+                                            #{path}::text[],            -- 修改路径 1：status 属性
+                                            #{newValue}::jsonb      -- 新值（字符串需用双引号包裹）
+                                    )
+                                ELSE
+                                    elem  -- 未匹配的元素保持不变
+                               END
+                   )
+            FROM canvases ,
+                 jsonb_array_elements(nodes) AS elem  -- 展开数组为行
+            WHERE id = #{canvasId}
+        )
+        WHERE id = #{canvasId};  -- 指定要更新的表记录（根据实际需求调整）
+    </update>
+    <update id="updateCanvasEdgeAttributeWithEdgeId">
+        UPDATE canvases
+        SET
+            edges = (
+                -- 子查询：展开、过滤、修改后重新聚合数组
+                SELECT
+                    jsonb_agg(
+                        -- 对匹配的元素修改属性，未匹配的保持原样
+                            CASE
+                                WHEN elem ->> 'id' = #{edgeId} THEN -- 目标 id（注意 JSON 中 id 是字符串还是数字？）
+                                    jsonb_set(
+                                            elem, -- 原数组元素
+                                            #{path}::text[], -- 修改路径 1：status 属性
+                                            #{newValue}::jsonb -- 新值（字符串需用双引号包裹）
+                                    )
+                                ELSE
+                                    elem -- 未匹配的元素保持不变
+                                END
+                    )
+                FROM
+                    canvases,
+                    jsonb_array_elements(edges) AS elem -- 展开数组为行
+                WHERE
+                    id = #{canvasId})
+        WHERE
+            id = #{canvasId}; -- 指定要更新的表记录（根据实际需求调整）
     </update>
 </mapper>

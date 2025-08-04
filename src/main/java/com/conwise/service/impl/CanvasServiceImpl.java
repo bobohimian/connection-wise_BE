@@ -21,8 +21,6 @@ public class CanvasServiceImpl implements CanvasService {
     private final MinioService minioService;
     private final CanvasMapper canvasMapper;
     private final UserMapper userMapper;
-    private final Map<Integer, LinkedHashMap<String, Integer>> nodeIndexMap = new HashMap<>();
-    private final Map<Integer, LinkedHashMap<String, Integer>> edgeindexMap = new HashMap<>();
 
     @Value("${resource.images}")
     private String DEFAULT_THUMBNAIL_PATH;
@@ -35,21 +33,10 @@ public class CanvasServiceImpl implements CanvasService {
     }
 
     public ApiResponse<Canvas> getCanvasById(int id) {
-        LinkedHashMap<String, Integer> nodeIndexMapOfOneCanvas = new LinkedHashMap<>();
-        LinkedHashMap<String, Integer> edgeIndexMapOfOneCanvas = new LinkedHashMap<>();
         Canvas canvas = canvasMapper.findById(id);
         if (canvas == null) {
             return ApiResponse.fail(ResponseCode.CANVAS_NOT_FOUND);
         }
-        List<Node> nodes = canvas.getNodes();
-        for (int index = 0; index < nodes.size(); index++) {
-            nodeIndexMapOfOneCanvas.put(nodes.get(index).getId(), index);
-        }
-        List<Edge> edges = canvas.getEdges();
-        for (int index = 0; index < edges.size(); index++)
-            edgeIndexMapOfOneCanvas.put(edges.get(index).getId(), index);
-        nodeIndexMap.put(id, nodeIndexMapOfOneCanvas);
-        edgeindexMap.put(id, edgeIndexMapOfOneCanvas);
         return ApiResponse.ok(canvas);
     }
 
@@ -116,18 +103,11 @@ public class CanvasServiceImpl implements CanvasService {
 
     public boolean addNode(int canvasId, String nodeId, String node) {
         int inserted = canvasMapper.insertCanvasNode(canvasId, node);
-        nodeIndexMap.get(canvasId).put(nodeId, nodeIndexMap.get(canvasId).size());
         return inserted > 0;
     }
 
-    public boolean deleteNode(int canvasId, String nodeId) {
+    public boolean deleteNodeById(int canvasId, String nodeId) {
         int deleted = canvasMapper.deleteCanvasNode(canvasId, nodeId);
-        LinkedHashMap<String, Integer> linkedHashMap = nodeIndexMap.get(canvasId);
-        linkedHashMap.remove(nodeId);
-        int newIndex = 0;
-        for (Map.Entry<String, Integer> entry : linkedHashMap.entrySet()) {
-            entry.setValue(newIndex++);
-        }
         return deleted > 0;
     }
 
@@ -140,28 +120,19 @@ public class CanvasServiceImpl implements CanvasService {
      * @return 更新是否成功
      */
     public boolean updateNodeAttribute(int canvasId, String nodeId, List<String> pathList, String newValue) {
-        String nodeIndex = String.valueOf(nodeIndexMap.get(canvasId).get(nodeId));
-        pathList.addFirst(nodeIndex);
         String path = PostgresPathHelper.formatPath(pathList);
-        int rowsUpdated = canvasMapper.updateCanvasNodeAttribute(canvasId, path, newValue);
+        int rowsUpdated = canvasMapper.updateCanvasNodeAttributeWithNodeId(canvasId,nodeId,path,newValue);
         return rowsUpdated > 0;
     }
 
 
     public boolean addEdge(int canvasId, String edgeId, String edge) {
         int inserted = canvasMapper.insertCanvasEdge(canvasId, edge);
-        edgeindexMap.get(canvasId).put(edgeId, edgeindexMap.get(canvasId).size());
         return inserted > 0;
     }
 
-    public boolean deleteEdge(int canvasId, String edgeId) {
+    public boolean deleteEdgebyId(int canvasId, String edgeId) {
         int deleted = canvasMapper.deleteCanvasEdge(canvasId, edgeId);
-        LinkedHashMap<String, Integer> linkedHashMap = edgeindexMap.get(canvasId);
-        linkedHashMap.remove(edgeId);
-        int newIndex = 0;
-        for (Map.Entry<String, Integer> entry : linkedHashMap.entrySet()) {
-            entry.setValue(newIndex++);
-        }
         return deleted > 0;
     }
 
@@ -173,10 +144,8 @@ public class CanvasServiceImpl implements CanvasService {
      * @return 更新是否成功
      */
     public boolean updateEdgeAttribute(int canvasId, String edgeId, List<String> pathList, String newValue) {
-        String edgeIndex = String.valueOf(edgeindexMap.get(canvasId).get(edgeId));
-        pathList.addFirst(edgeIndex);
         String path = PostgresPathHelper.formatPath(pathList);
-        int rowsUpdated = canvasMapper.updateCanvasEdgeAttribute(canvasId, path, newValue);
+        int rowsUpdated = canvasMapper.updateCanvasEdgeAttributeWithEdgeId(canvasId, edgeId,path, newValue);
         return rowsUpdated > 0;
     }
 

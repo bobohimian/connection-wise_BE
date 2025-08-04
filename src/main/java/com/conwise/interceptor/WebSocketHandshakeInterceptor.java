@@ -47,6 +47,7 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             }
             // 无 SESSION,拒绝握手
             if(sessionId == null){
+                System.out.println("无sessionId");
                 response.setStatusCode(HttpStatus.FORBIDDEN);
                 return false;
             }
@@ -54,6 +55,7 @@ public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
             // 获取 HttpSession
             HttpSession session = servletRequest.getServletRequest().getSession();
             if(session == null||!session.getId().equals(sessionId)){
+                System.out.println("session不存在,或不是该用户");
                 response.setStatusCode(HttpStatus.FORBIDDEN);
                 return false;
             }
