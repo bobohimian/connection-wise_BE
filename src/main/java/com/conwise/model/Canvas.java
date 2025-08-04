@@ -18,5 +18,6 @@ public class Canvas {
     private List<Node> nodes;
     private List<Edge> edges;
     private Object settings; // 或使用特定的设置类
+    private String permission;
 }
 

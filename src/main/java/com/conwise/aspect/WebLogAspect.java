@@ -72,21 +72,26 @@ public class WebLogAspect {
     // 返回通知，记录响应结果
     @AfterReturning(returning = "ret", pointcut = "webLog()")
     public void doAfterReturning(Object ret) {
-        ResponseEntity<ApiResponse<?>> responseEntity = (ResponseEntity<ApiResponse<?>>) ret;
-        ApiResponse<?> apiResponse = responseEntity.getBody();
         try {
-            // 使用 ObjectMapper 将响应结果转换为 JSON 字符串
-            String jsonResponse = objectMapper.writeValueAsString(apiResponse);
-            // 设置最大长度限制
-            int maxLength = 256;
-            if (jsonResponse.length() > maxLength) {
-                log.info("Response (truncated): {}...", jsonResponse.substring(0, maxLength));
+            if (ret instanceof ResponseEntity) {
+                ResponseEntity<?> responseEntity = (ResponseEntity<?>) ret;
+                Object body = responseEntity.getBody();
+                // 使用 ObjectMapper 将响应结果转换为 JSON 字符串
+                String jsonResponse = objectMapper.writeValueAsString(body);
+                // 设置最大长度限制
+                int maxLength = 256;
+                if (jsonResponse.length() > maxLength) {
+                    log.info("Response (truncated): {}...", jsonResponse.substring(0, maxLength));
+                } else {
+                    log.info("Response: {}", jsonResponse);
+                }
             } else {
-                log.info("Response: {}", jsonResponse);
+                // 处理非ResponseEntity类型的返回值，如Flux
+                log.info("Response type: {}", ret.getClass().getName());
             }
         } catch (Exception e) {
             log.error("Failed to serialize response to JSON", e);
-            log.info("Response: {}", apiResponse);
+            log.info("Response: {}", ret);
         }
         log.info("========== 请求结束 ===========");
     }
