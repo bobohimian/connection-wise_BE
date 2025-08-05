@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     
     steps:
@@ -31,3 +31,23 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/connectwise-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  deploy:
+    needs: [ build ]  # 等待镜像构建完成
+    runs-on: ubuntu-latest
+    steps:
+      - name: 连接服务器并执行部署脚本
+        uses: appleboy/ssh-action@v0.1.10  # SSH 连接工具
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # SSH 私钥（免密登录）
+          script: |
+            # 进入服务器项目目录
+            cd ~/connectwise
+
+            # 拉取最新镜像（关键步骤：获取后端最新镜像）
+            docker-compose pull
+
+            # 重启容器（自动使用新镜像，保留数据卷）
+            docker-compose up -d backend-service
