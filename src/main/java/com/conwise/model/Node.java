@@ -15,5 +15,6 @@ public class Node {
     private String className;
     private Object style;
     private ArrayList<Float> origin;
+    private Integer version;
 }
 

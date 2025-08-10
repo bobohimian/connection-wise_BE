@@ -6,6 +6,7 @@ import com.conwise.model.CanvasShare;
 import com.conwise.model.User;
 import com.conwise.service.CanvasService;
 import com.conwise.service.CanvasShareService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -29,8 +30,10 @@ public class CanvasController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Canvas>> getCanvasById(@PathVariable int id) {
-        ApiResponse<Canvas> apiResponse = canvasService.getCanvasById(id);
+    public ResponseEntity<ApiResponse<Canvas>> getCanvasById(@PathVariable int id, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        Integer userId = user.getId();
+        ApiResponse<Canvas> apiResponse = canvasService.getCanvasById(id,userId);
         return ResponseEntity.ok(apiResponse);
     }
 

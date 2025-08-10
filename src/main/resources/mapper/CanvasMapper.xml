@@ -13,6 +13,28 @@
         <result property="updatedAt" column="updated_at"/>
         <result property="settings" column="settings" typeHandler="com.conwise.handler.JsonTypeHandler"/>
     </resultMap>
+    <resultMap id="NodeResultMap" type="com.conwise.model.Node">
+        <id property="id" column="id"/>
+        <result property="type" column="type"/>
+        <result property="position.x" column="position_x"/>
+        <result property="position.y" column="position_y"/>
+        <result property="data" column="data_json" typeHandler="com.conwise.handler.JsonTypeHandler"/>
+        <result property="version" column="version"/>
+    </resultMap>
+    <resultMap id="edgeResultMap" type="Edge">
+        <id property="id" column="id"/>
+        <result property="type" column="type"/>
+        <result property="source" column="source"/>
+        <result property="target" column="target"/>
+        <result property="animated" column="animated"/>
+        <result property="sourceHandle" column="source_handle"/>
+        <result property="targetHandle" column="target_handle"/>
+        <result property="version" column="version"/>
+
+        <!-- 使用自定义 TypeHandler 处理 data 字段 -->
+        <result property="data" column="data_json"
+                typeHandler="com.conwise.handler.JsonTypeHandler"/>
+    </resultMap>
 
     <sql id="Base_Column_List">
         id,user_id,user_name,title,description, thumbnail_file_name,created_at,updated_at,settings
@@ -37,24 +59,24 @@
 
     <select id="findById" resultMap="CanvasResultMap">
         SELECT
-            <include refid="Base_Column_List_including_nodes_edges">
-            </include>
+        <include refid="Base_Column_List_including_nodes_edges">
+        </include>
         FROM
-            canvases
+        canvases
         WHERE
-            id = #{id}
+        id = #{id}
     </select>
 
     <select id="findByUserId" resultMap="CanvasListResultMap">
         SELECT
-            <include refid="Base_Column_List">
-            </include>
+        <include refid="Base_Column_List">
+        </include>
         FROM
-            canvases
+        canvases
         WHERE
-            user_id = #{userId}
+        user_id = #{userId}
         ORDER BY
-            updated_at DESC;
+        updated_at DESC;
     </select>
 
     <select id="findByIdIn" resultType="com.conwise.model.Canvas">
@@ -68,6 +90,42 @@
         <foreach item="id" collection="ids" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </select>
+    <select id="getNode" resultMap="NodeResultMap">
+        SELECT
+            (elem ->> 'id')              AS id,
+            (elem ->> 'type')            AS type,
+            (elem -> 'position' ->> 'x')::float AS "position_x",
+            (elem -> 'position' ->> 'y')::float AS "position_y",
+            (elem -> 'data')::TExt AS "data_json",
+            (elem ->> 'version')         AS version
+
+        FROM
+            public.canvases c,
+            jsonb_array_elements(c.nodes) elem
+        WHERE
+              c.id = #{canvasId}
+          AND elem ->> 'id' = #{nodeId}
+    </select>
+    <select id="getEdge" resultType="com.conwise.model.Edge">
+        SELECT
+        (elem->>'id') AS id,
+        (elem->>'type') AS type,
+        (elem->>'source') AS source,
+        (elem->>'target') AS target,
+        (elem->>'animated')::boolean AS animated,
+        (elem->>'sourceHandle') AS source_handle,
+        (elem->>'targetHandle') AS target_handle,
+
+        <!-- 将 JSONB 转为字符串供 TypeHandler 处理 -->
+        (elem->'data')::TEXT AS data_json,
+        (elem ->> 'version')         AS version
+
+
+        FROM public.canvases c,
+        jsonb_array_elements(c.edges) elem
+        WHERE c.id = #{canvasId}
+        AND elem->>'id' = #{edgeId}
     </select>
 
     <insert id="insert" parameterType="com.conwise.model.Canvas" useGeneratedKeys="true" keyProperty="id">
@@ -193,25 +251,36 @@
     </update>
     <update id="updateCanvasNodeAttributeWithNodeId">
         UPDATE canvases
-        SET nodes = (
-            -- 子查询：展开、过滤、修改后重新聚合数组
-            SELECT jsonb_agg(
-                       -- 对匹配的元素修改属性，未匹配的保持原样
-                           CASE WHEN elem ->> 'id' = #{nodeId} THEN  -- 目标 id（注意 JSON 中 id 是字符串还是数字？）
+        SET
+            nodes = (
+                -- 子查询：展开、过滤、修改后重新聚合数组
+                SELECT
+                    jsonb_agg(
+                        -- 对匹配的元素修改属性，未匹配的保持原样
+                            CASE
+                                WHEN elem ->> 'id' = #{nodeId} THEN -- 目标 id（注意 JSON 中 id 是字符串还是数字？）
                                     jsonb_set(
-                                            elem,                  -- 原数组元素
-                                            #{path}::text[],            -- 修改路径 1：status 属性
-                                            #{newValue}::jsonb      -- 新值（字符串需用双引号包裹）
+                                            jsonb_set(
+                                                elem,
+                                                #{versionPath}::text[],  <!-- 第一个属性的路径 -->
+                                                to_jsonb(#{newVersion}),  <!-- 第一个属性的新值 -->
+                                                TRUE
+                                            ),
+                                            #{path}::text[], -- 修改路径 1：status 属性
+                                            #{newValue}::jsonb, -- 新值（字符串需用双引号包裹）
+                                            TRUE
                                     )
                                 ELSE
-                                    elem  -- 未匹配的元素保持不变
-                               END
-                   )
-            FROM canvases ,
-                 jsonb_array_elements(nodes) AS elem  -- 展开数组为行
-            WHERE id = #{canvasId}
-        )
-        WHERE id = #{canvasId};  -- 指定要更新的表记录（根据实际需求调整）
+                                    elem -- 未匹配的元素保持不变
+                                END
+                    )
+                FROM
+                    canvases,
+                    jsonb_array_elements(nodes) AS elem -- 展开数组为行
+                WHERE
+                    id = #{canvasId})
+        WHERE
+            id = #{canvasId}; -- 指定要更新的表记录（根据实际需求调整）
     </update>
     <update id="updateCanvasEdgeAttributeWithEdgeId">
         UPDATE canvases
@@ -224,9 +293,15 @@
                             CASE
                                 WHEN elem ->> 'id' = #{edgeId} THEN -- 目标 id（注意 JSON 中 id 是字符串还是数字？）
                                     jsonb_set(
-                                            elem, -- 原数组元素
+                                            jsonb_set(
+                                                elem,
+                                                #{versionPath}::text[],  <!-- 第一个属性的路径 -->
+                                                to_jsonb(#{newVersion}),  <!-- 第一个属性的新值 -->
+                                                TRUE
+                                            ),
                                             #{path}::text[], -- 修改路径 1：status 属性
-                                            #{newValue}::jsonb -- 新值（字符串需用双引号包裹）
+                                            #{newValue}::jsonb, -- 新值（字符串需用双引号包裹）
+                                            TRUE
                                     )
                                 ELSE
                                     elem -- 未匹配的元素保持不变
