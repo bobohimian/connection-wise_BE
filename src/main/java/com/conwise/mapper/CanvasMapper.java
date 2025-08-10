@@ -41,7 +41,9 @@ public interface CanvasMapper {
             @Param("canvasId") int canvasId,
             @Param("nodeId") String nodeId,
             @Param("path") String Path,
-            @Param("newValue") String newValue
+            @Param("newValue") String newValue,
+            @Param("versionPath") String versionPath,
+            @Param("newVersion") Integer newVersion
     );
 
     // 添加节点
@@ -67,7 +69,9 @@ public interface CanvasMapper {
             @Param("canvasId") int canvasId,
             @Param("edgeId") String edgeId,
             @Param("path") String path,
-            @Param("newValue") String value
+            @Param("newValue") String value,
+            @Param("versionPath") String versionPath,
+            @Param("newVersion") Integer newVersion
     );
 
     // 添加边
@@ -81,4 +85,11 @@ public interface CanvasMapper {
             @Param("canvasId") int canvasId,
             @Param("edgeId") String edgeId
     );
+
+    Node getNode(
+            @Param("canvasId") int canvasId,
+            @Param("nodeId") String nodeId);
+
+    Edge getEdge(@Param("canvasId") int canvasId,
+                 @Param("edgeId") String edgeId);
 }

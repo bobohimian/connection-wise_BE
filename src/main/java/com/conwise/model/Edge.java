@@ -14,4 +14,5 @@ public class Edge {
     private Object data;
     private boolean animated;
     private Object style;
+    private Integer version;
 }

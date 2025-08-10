@@ -1,5 +1,7 @@
 package com.conwise.controller;
 
+import com.conwise.model.Edge;
+import com.conwise.model.Node;
 import com.conwise.model.Operation;
 import com.conwise.model.RequestMessage;
 import com.conwise.service.CanvasService;
@@ -81,7 +83,7 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
         Integer canvasId = (Integer) session.getAttributes().get("canvasId");
         if (canvasId == null)
             return;
-        Operation operation = req.getOperation();
+        Operation operation;
         try {
             log.info(mapper.writeValueAsString(req));
         } catch (JsonProcessingException e) {
@@ -99,7 +101,18 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
                     break;
                 case "updateNode":
                     operation = req.getOperation();
-                    boolean nodeUpdated = canvasService.updateNodeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue());
+                    boolean nodeUpdated = canvasService.updateNodeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue(),operation.getVersion());
+                    if (!nodeUpdated) {
+                        Node node = canvasService.getNode(canvasId, operation.getId());
+                        Operation newOperation = new Operation();
+                        newOperation.setId(operation.getId());
+                        newOperation.setValue(mapper.writeValueAsString(node));
+                        RequestMessage newReq = new RequestMessage();
+                        newReq.setType("flushNode");
+                        newReq.setOperation(newOperation);
+                        TextMessage newText = new TextMessage(mapper.writeValueAsString(newReq));
+                        session.sendMessage(newText);
+                    }
                     break;
                 case "addEdge":
                     operation = req.getOperation();
@@ -111,13 +124,28 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
                     break;
                 case "updateEdge":
                     operation = req.getOperation();
-                    boolean edgeUpdated = canvasService.updateEdgeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue());
+                    boolean edgeUpdated = canvasService.updateEdgeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue(),operation.getVersion());
+                    if (!edgeUpdated) {
+                        Edge edge = canvasService.getEdge(canvasId, operation.getId());
+                        Operation newOperation = new Operation();
+                        newOperation.setId(operation.getId());
+                        newOperation.setValue(mapper.writeValueAsString(edge));
+                        RequestMessage newReq = new RequestMessage();
+                        newReq.setType("flushEdge");
+                        newReq.setOperation(newOperation);
+                        TextMessage newText = new TextMessage(mapper.writeValueAsString(newReq));
+                        session.sendMessage(newText);
+                    }
                     break;
                 default:
             }
             this.broadcast(session, message);
         } catch (Exception e) {
-            throw e;
+            try {
+                throw e;
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
 //            log.error("业务逻辑执行异常，canvasId：{}，类型：{},消息:{}", canvasId, req.getType(), message);
         }
     }
