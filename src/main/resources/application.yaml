@@ -11,5 +11,10 @@ server:
         path: /
         name: SESSIONID
       timeout: 36000
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.conwise.model
+  configuration:
+    map-underscore-to-camel-case: true
 logging:
   config: src/main/resources/logback-spring.xml
