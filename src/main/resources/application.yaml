@@ -11,8 +11,5 @@ server:
         path: /
         name: SESSIONID
       timeout: 36000
-resource:
-  static:
-    images: src/main/resources/static/images/default-thumbnail.webp
 logging:
   config: src/main/resources/logback-spring.xml

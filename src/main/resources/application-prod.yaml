@@ -30,8 +30,10 @@ minio:
     username: ${MINIO_ROOT_USER}
     password: ${MINIO_ROOT_PASSWORD}
   bucketName: ${MINIO_BUCKET}
-  secure: ${MINIO_SECURE}
 websocket:
   max-connections: 1000
   room:
     max-connections: 5
+resource:
+  static:
+    images: /app/resources/static/images/default-thumbnail.webp
