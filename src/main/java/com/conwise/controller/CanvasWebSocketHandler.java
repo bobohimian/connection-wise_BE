@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -29,17 +30,25 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Component
 @Slf4j
 public class CanvasWebSocketHandler extends TextWebSocketHandler {
-    private final CanvasService canvasService;
+    private CanvasService canvasService;
     private final ObjectMapper mapper;
     private final Map<Integer, List<WebSocketSession>> sessionMap = new ConcurrentHashMap<>();
 
     // 心跳机制参数
+    @Value("${websocket.max-connections}")
+    private int MAX_CONNECTIONS;
+    @Value("${websocket.room.max-connections}")
+    private int ROOMS_MAX_CONNECTIONS;
     private static final long HEARTBEAT_INTERVAL = 30000;
     private static final long HEARTBEAT_TIMEOUT = 70000;
 
     @Autowired
-    public CanvasWebSocketHandler(CanvasService canvasService, ObjectMapper mapper) {
+    public void setCanvasService(CanvasService canvasService) {
         this.canvasService = canvasService;
+    }
+
+    @Autowired
+    public CanvasWebSocketHandler(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 
@@ -83,25 +92,23 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
         Integer canvasId = (Integer) session.getAttributes().get("canvasId");
         if (canvasId == null)
             return;
-        Operation operation;
+
         try {
             log.info(mapper.writeValueAsString(req));
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+        Operation operation=req.getOperation();
         try {
             switch (req.getType()) {
                 case "addNode":
-                    operation = req.getOperation();
                     canvasService.addNode(canvasId, operation.getId(), operation.getValue());
                     break;
                 case "deleteNode":
-                    operation = req.getOperation();
                     canvasService.deleteNodeById(canvasId, operation.getId());
                     break;
                 case "updateNode":
-                    operation = req.getOperation();
-                    boolean nodeUpdated = canvasService.updateNodeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue(),operation.getVersion());
+                    boolean nodeUpdated = canvasService.updateNodeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue(), operation.getVersion());
                     if (!nodeUpdated) {
                         Node node = canvasService.getNode(canvasId, operation.getId());
                         Operation newOperation = new Operation();
@@ -112,19 +119,17 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
                         newReq.setOperation(newOperation);
                         TextMessage newText = new TextMessage(mapper.writeValueAsString(newReq));
                         session.sendMessage(newText);
+                        return;
                     }
                     break;
                 case "addEdge":
-                    operation = req.getOperation();
                     canvasService.addEdge(canvasId, operation.getId(), operation.getValue());
                     break;
                 case "deleteEdge":
-                    operation = req.getOperation();
                     canvasService.deleteEdgebyId(canvasId, operation.getId());
                     break;
                 case "updateEdge":
-                    operation = req.getOperation();
-                    boolean edgeUpdated = canvasService.updateEdgeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue(),operation.getVersion());
+                    boolean edgeUpdated = canvasService.updateEdgeAttribute(canvasId, operation.getId(), operation.getPath(), operation.getValue(), operation.getVersion());
                     if (!edgeUpdated) {
                         Edge edge = canvasService.getEdge(canvasId, operation.getId());
                         Operation newOperation = new Operation();
@@ -135,11 +140,12 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
                         newReq.setOperation(newOperation);
                         TextMessage newText = new TextMessage(mapper.writeValueAsString(newReq));
                         session.sendMessage(newText);
+                        return;
                     }
                     break;
                 default:
             }
-            this.broadcast(session, message);
+            this.broadcast(session, message, operation.getIncludeSender());
         } catch (Exception e) {
             try {
                 throw e;
@@ -156,11 +162,11 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
         session.sendMessage(new TextMessage(mapper.writeValueAsString(pong)));
     }
 
-    private void broadcast(WebSocketSession session, TextMessage message) {
+    private void broadcast(WebSocketSession session, TextMessage message, boolean includeSender) {
         Integer canvasId = (Integer) session.getAttributes().get("canvasId");
         List<WebSocketSession> webSocketSessions = sessionMap.get(canvasId);
         webSocketSessions.forEach(webSocketSession -> {
-            if (webSocketSession.equals(session) || !session.isOpen())
+            if (webSocketSession.equals(session) && !includeSender)
                 return;
             try {
                 webSocketSession.sendMessage(message);
@@ -200,5 +206,21 @@ public class CanvasWebSocketHandler extends TextWebSocketHandler {
                 return false;
             });
         });
+    }
+
+    public boolean isOverMaxConnections() {
+        int currentConnections = 0;
+        for (List<WebSocketSession> sessions : sessionMap.values()) {
+            currentConnections += sessions.size();
+        }
+        return currentConnections >= MAX_CONNECTIONS;
+    }
+
+    public boolean isOverRoomMaxConnections(int canvasId) {
+        List<WebSocketSession> webSocketSessions = sessionMap.get(canvasId);
+        if (webSocketSessions == null)
+            return false;
+        int currentConnections = webSocketSessions.size();
+        return currentConnections >= ROOMS_MAX_CONNECTIONS;
     }
 }

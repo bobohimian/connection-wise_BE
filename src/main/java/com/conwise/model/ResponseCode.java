@@ -54,8 +54,9 @@ public enum ResponseCode {
     WS_MESSAGE_SEND_SUCCESS(5003, "消息发送成功"),
     WS_MESSAGE_SEND_FAILED(5004, "消息发送失败"),
     WS_PERMISSION_DENIED(5005, "无权限加入该画布会话"),
-    WS_Canvas_NOT_FOUND(5006, "WebSocket 会话对应的画布不存在");
-
+    WS_Canvas_NOT_FOUND(5006, "WebSocket 会话对应的画布不存在"),
+    WS_OVER_MAXCONNECTIONS(5007,"服务器繁忙,连接达到上限"),
+    WS_OVER_ROOM_MAXCONNECTIONS(5008,"房间人数达到上限");
     private final int code;
     private final String message;
 
