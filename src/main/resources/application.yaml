@@ -16,5 +16,3 @@ mybatis:
   type-aliases-package: com.conwise.model
   configuration:
     map-underscore-to-camel-case: true
-logging:
-  config: src/main/resources/logback-spring.xml
