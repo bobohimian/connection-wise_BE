@@ -10,4 +10,5 @@ public class Operation {
     private List<String> path;
     private String value;
     private Integer version;
+    private Boolean includeSender = false;
 }

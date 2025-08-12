@@ -1,5 +1,6 @@
 package com.conwise.service.impl;
 
+import com.conwise.controller.CanvasWebSocketHandler;
 import com.conwise.helper.PostgresPathHelper;
 import com.conwise.mapper.CanvasMapper;
 import com.conwise.mapper.CanvasShareMapper;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.*;
 
@@ -36,7 +38,6 @@ public class CanvasServiceImpl implements CanvasService {
         this.versionService = versionService;
         this.canvasShareMapper = canvasShareMapper;
     }
-
     public ApiResponse<Canvas> getCanvasById(int id, int userId) {
         Canvas canvas = canvasMapper.findById(id);
         if (canvas == null) {
@@ -57,6 +58,7 @@ public class CanvasServiceImpl implements CanvasService {
 
     public ApiResponse<List<Canvas>> getCanvasesByUserId(int userId) {
         List<Canvas> byUserId = canvasMapper.findByUserId(userId);
+        byUserId.forEach(canvas -> canvas.setPermission("owner"));
         return ApiResponse.ok(byUserId);
     }
 
@@ -202,6 +204,4 @@ public class CanvasServiceImpl implements CanvasService {
         int rowsUpdated = canvasMapper.updateCanvasEdgeAttributeWithEdgeId(canvasId, edgeId, path, newValue, versionPath, version + 1);
         return rowsUpdated > 0;
     }
-
-
 }

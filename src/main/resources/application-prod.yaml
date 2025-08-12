@@ -1,18 +1,3 @@
-server:
-  port: 8080
-  servlet:
-    context-path: /api
-    session:
-      cookie:
-        max-age: 36000
-        path: /
-        name: SESSIONID
-      timeout: 36000
-mybatis:
-  mapper-locations: classpath:mapper/*.xml
-  type-aliases-package: com.conwise.model
-  configuration:
-    map-underscore-to-camel-case: true
 spring:
   application:
     name: connectWise
@@ -46,6 +31,7 @@ minio:
     password: ${MINIO_ROOT_PASSWORD}
   bucketName: ${MINIO_BUCKET}
   secure: ${MINIO_SECURE}
-resource:
-  static:
-    images: /app/resources/static/images/default-thumbnail.webp
+websocket:
+  max-connections: 1000
+  room:
+    max-connections: 5

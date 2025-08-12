@@ -15,6 +15,7 @@ import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -27,10 +28,11 @@ import java.util.Objects;
 public class WebSocketHandshakeInterceptor implements HandshakeInterceptor {
     private final CanvasShareService canvasShareService;
     private final CanvasService canvasService;
-
-    public WebSocketHandshakeInterceptor(CanvasShareService canvasShareService, CanvasService canvasService) {
+    private final TextWebSocketHandler CanvasWebSocketHandler;
+    public WebSocketHandshakeInterceptor(CanvasShareService canvasShareService, CanvasService canvasService, TextWebSocketHandler canvasWebSocketHandler) {
         this.canvasShareService = canvasShareService;
         this.canvasService = canvasService;
+        CanvasWebSocketHandler = canvasWebSocketHandler;
     }
 
     @Override
